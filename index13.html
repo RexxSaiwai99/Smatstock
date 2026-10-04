@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAI Robotics & AI Lab — Inventory & Borrowing System</title>
+  <meta name="description" content="Single-file enterprise inventory, analytics, and equipment borrowing system for the RAI Robotics & AI Lab.">
+  <meta property="og:title" content="RAI Robotics & AI Lab">
+  <meta property="og:description" content="Inventory, Analytics & Borrowing System.">
+  
+  <!-- Google Fonts for High-Tech Engineering Aesthetic -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN for utility classes -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              sidebar: '#111827', // Deep slate / dark indigo
+              sidebarAccent: '#1e1b4b',
+              body: '#0f172a',
+              card: '#1e293b',
+              accent: '#6366f1',
+              accentHover: '#4f46e5',
+              cyan: '#06b6d4',
+              emerald: '#10b981',
+              rose: '#f43f5e',
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+            tech: ['"Chakra Petch"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Complete Embedded CSS for Pure Standalone & Offline Support -->
+  <style>
+    :root {
+      --sidebar-width: 280px;
+      --header-height: 64px;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background-color: #0b0f19;
+      color: #f1f5f9;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .font-tech {
+      font-family: 'Chakra Petch', sans-serif;
+    }
+
+    /* Custom high-contrast scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090d16;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+
+    /* Layout structure */
+    #app-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #main-wrapper {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #side-drawer {
+      width: var(--sidebar-width);
+      background-color: #0c1222;
+      border-right: 1px solid #1e293b;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      transition: transform 0.25s ease-in-out;
+      z-index: 40;
+    }
+
+    #content-container {
+      flex: 1;
+      overflow-y: auto;
+      background-color: #080d1a;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Tab view management */
+    .tab-view {
+      display: none;
+      animation: fadeIn 0.15s ease-in-out;
+    }
+
+    .tab-view.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Mobile drawer overlay */
+    #drawer-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 30;
+    }
+
+    @media (max-width: 1024px) {
+      #side-drawer {
+        position: fixed;
+        top: var(--header-height);
+        bottom: 0;
+        left: 0;
+        transform: translateX(-100%);
+        box-shadow: 10px 0 25px rgba(0, 0, 0, 0.5);
+      }
+      #side-drawer.open {
+        transform: translateX(0);
+      }
+      #drawer-overlay.open {
+        display: block;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 antialiased selection:bg-indigo-600/30 selection:text-indigo-200">
+  <div id="app-container">
+
+    <!-- ========================================================================= -->
+    <!-- 1. TOP NAVIGATION BAR                                                     -->
+    <!-- ========================================================================= -->
+    <header class="h-16 border-b border-slate-800 bg-[#090e1c] px-4 sm:px-6 flex items-center justify-between z-50 shrink-0">
+      
+      <!-- Brand & Mobile Menu Button -->
+      <div class="flex items-center gap-3">
+        <!-- Mobile Drawer Toggle -->
+        <button id="btn-toggle-drawer" class="lg:hidden p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 transition-colors" aria-label="Toggle Summary Drawer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+
+        <!-- Lab Branding Logo -->
+        <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('dashboard')">
+          <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center text-white shadow-md shadow-indigo-600/30 font-tech font-bold text-lg">
+            RAI
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-tech text-base font-bold tracking-wider text-slate-100 uppercase">
+                RAI Robotics & AI Lab
+              </span>
+              <span class="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/40 px-1.5 py-0.5 rounded">
+                <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                M0 ONLINE
+              </span>
+            </div>
+            <div class="text-[11px] text-slate-400 font-mono hidden sm:block">
+              Inventory, Analytics & Equipment Borrowing System
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs (Center) -->
+      <nav class="hidden md:flex items-center gap-1 bg-slate-900/90 border border-slate-800 rounded-lg p-1">
+        <button 
+          id="nav-tab-dashboard" 
+          onclick="switchTab('dashboard')" 
+          class="nav-btn px-3.5 py-1.5 rounded-md text-xs font-semibold text-slate-300 hover:text-white transition-all bg-indigo-600 text-white shadow-sm"
+          data-tab="dashboard">
+          Dashboard
+        </button>
+        <button 
+          id="nav-tab-borrow" 
+          onclick="switchTab('borrow')" 
+          class="nav-btn px-3.5 py-1.5 rounded-md text-xs font-semibold text-slate-400 hover:text-slate-200 transition-all"
+          data-tab="borrow">
+          Borrow & Return
+        </button>
+        <button 
+          id="nav-tab-inventory" 
+          onclick="switchTab('inventory')" 
+          class="nav-btn px-3.5 py-1.5 rounded-md text-xs font-semibold text-slate-400 hover:text-slate-200 transition-all"
+          data-tab="inventory">
+          Inventory Search
+        </button>
+        <button 
+          id="nav-tab-admin" 
+          onclick="switchTab('admin')" 
+          class="nav-btn px-3.5 py-1.5 rounded-md text-xs font-semibold text-slate-400 hover:text-slate-200 transition-all"
+          data-tab="admin">
+          Admin Panel
+        </button>
+      </nav>
+
+      <!-- User Auth State Pill (Right) -->
+      <div class="flex items-center gap-3">
+        <!-- Interactive Auth State Pill -->
+        <button 
+          id="user-auth-pill"
+          onclick="toggleAuthRole()" 
+          title="Click to toggle between Admin and Student role (M0 Simulation)"
+          class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-950/70 border border-indigo-700/60 hover:border-indigo-500 text-indigo-200 text-xs font-mono transition-all shadow-inner">
+          <span id="auth-status-dot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          <span id="auth-role-label" class="font-bold">ADMIN</span>
+          <span class="text-slate-500">|</span>
+          <span id="auth-name-label" class="text-slate-300 font-sans font-medium text-[11px] truncate max-w-[130px]">
+            Dr. Thanapat (Staff)
+          </span>
+          <span class="text-[9px] text-indigo-400 uppercase tracking-wider bg-indigo-900/60 px-1 py-0.5 rounded">
+            TOGGLE
+          </span>
+        </button>
+      </div>
+
+    </header>
+
+    <!-- Mobile Navigation Tab Bar (Visible on small screens) -->
+    <div class="md:hidden flex items-center justify-around bg-slate-900 border-b border-slate-800 px-2 py-1.5 text-xs font-medium">
+      <button onclick="switchTab('dashboard')" class="mobile-nav-btn py-1 px-2.5 rounded text-indigo-400 font-bold" data-tab="dashboard">Dashboard</button>
+      <button onclick="switchTab('borrow')" class="mobile-nav-btn py-1 px-2.5 rounded text-slate-400" data-tab="borrow">Borrow & Return</button>
+      <button onclick="switchTab('inventory')" class="mobile-nav-btn py-1 px-2.5 rounded text-slate-400" data-tab="inventory">Inventory</button>
+      <button onclick="switchTab('admin')" class="mobile-nav-btn py-1 px-2.5 rounded text-slate-400" data-tab="admin">Admin</button>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- 2. MAIN LAYOUT WRAPPER (SIDEBAR DRAWER + CONTENT VIEW)                    -->
+    <!-- ========================================================================= -->
+    <div id="main-wrapper">
+
+      <!-- Mobile Overlay for Drawer -->
+      <div id="drawer-overlay" onclick="toggleDrawer(false)"></div>
+
+      <!-- SIDE NAVIGATION / SUMMARY DRAWER -->
+      <aside id="side-drawer" class="p-4 flex flex-col justify-between">
+        <div class="space-y-5">
+          
+          <!-- Drawer Header -->
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div>
+              <div class="text-[10px] font-mono uppercase tracking-widest text-slate-400">LAB MONITOR</div>
+              <div class="text-xs font-bold text-slate-200">Real-Time Telemetry</div>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-950/80 text-emerald-400 border border-emerald-800/40">
+              ACTIVE
+            </span>
+          </div>
+
+          <!-- Quick Navigation Links -->
+          <div class="space-y-1">
+            <div class="text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-2">QUICK JUMP</div>
+            <button onclick="switchTab('dashboard')" class="drawer-nav-item w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/80 transition-colors text-left" data-tab="dashboard">
+              <span class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                </svg>
+                <span>Analytics Dashboard</span>
+              </span>
+              <span class="text-[10px] font-mono text-slate-500">M3</span>
+            </button>
+
+            <button onclick="switchTab('borrow')" class="drawer-nav-item w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/80 transition-colors text-left" data-tab="borrow">
+              <span class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                </svg>
+                <span>Borrow & Return Desk</span>
+              </span>
+              <span class="text-[10px] font-mono text-slate-500">M4/M5</span>
+            </button>
+
+            <button onclick="switchTab('inventory')" class="drawer-nav-item w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/80 transition-colors text-left" data-tab="inventory">
+              <span class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                </svg>
+                <span>Inventory Catalog</span>
+              </span>
+              <span class="text-[10px] font-mono text-slate-500">M2</span>
+            </button>
+
+            <button onclick="switchTab('admin')" class="drawer-nav-item w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/80 transition-colors text-left" data-tab="admin">
+              <span class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                </svg>
+                <span>Admin & Directory</span>
+              </span>
+              <span class="text-[10px] font-mono text-slate-500">M1/M6</span>
+            </button>
+          </div>
+
+          <!-- Quick Stats Summary Cards -->
+          <div class="space-y-2.5">
+            <div class="text-[10px] font-mono text-slate-400 uppercase tracking-wider">LAB TELEMETRY SNAPSHOT</div>
+            
+            <!-- Stat 1: Total Inventory Items -->
+            <div class="p-3 rounded-lg bg-slate-900/90 border border-slate-800/90 flex items-center justify-between">
+              <div>
+                <div class="text-[11px] text-slate-400 font-mono">Total Equipment</div>
+                <div class="text-sm font-bold font-mono text-slate-100">32 Items <span class="text-[11px] text-slate-400 font-normal">(168 units)</span></div>
+              </div>
+              <div class="w-8 h-8 rounded bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-mono text-xs font-bold">
+                EQ
+              </div>
+            </div>
+
+            <!-- Stat 2: Active Field Loans -->
+            <div class="p-3 rounded-lg bg-slate-900/90 border border-slate-800/90 flex items-center justify-between">
+              <div>
+                <div class="text-[11px] text-slate-400 font-mono">Active Checkouts</div>
+                <div class="text-sm font-bold font-mono text-cyan-300">4 Items <span class="text-[11px] text-slate-400 font-normal">in field</span></div>
+              </div>
+              <div class="w-8 h-8 rounded bg-cyan-600/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-mono text-xs font-bold">
+                LN
+              </div>
+            </div>
+
+            <!-- Stat 3: Overdue Violations -->
+            <div class="p-3 rounded-lg bg-rose-950/20 border border-rose-900/50 flex items-center justify-between">
+              <div>
+                <div class="text-[11px] text-rose-400 font-mono">Overdue Risk</div>
+                <div class="text-sm font-bold font-mono text-rose-300">2 Critical</div>
+              </div>
+              <div class="w-8 h-8 rounded bg-rose-600/20 border border-rose-500/30 flex items-center justify-center text-rose-400 font-mono text-xs font-bold animate-pulse">
+                !
+              </div>
+            </div>
+
+            <!-- Stat 4: Inventory Health Index -->
+            <div class="p-3 rounded-lg bg-slate-900/90 border border-slate-800/90">
+              <div class="flex items-center justify-between text-[11px] font-mono mb-1">
+                <span class="text-slate-400">Availability Index:</span>
+                <span class="text-emerald-400 font-bold">88%</span>
+              </div>
+              <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                <div class="bg-emerald-500 h-1.5 rounded-full" style="width: 88%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Location Shelf Quick Reference -->
+          <div class="p-3 rounded-lg bg-slate-950/80 border border-slate-800/80 text-[11px] font-mono text-slate-400 space-y-1">
+            <div class="text-slate-300 font-semibold text-xs flex items-center gap-1.5 mb-1">
+              <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              <span>LAB ZONES</span>
+            </div>
+            <div>Cabinet A: Measurement Scopes</div>
+            <div>Cabinet B: Jetson Edge AI Units</div>
+            <div>Cabinet C: BLDC Motor Drivers</div>
+            <div>Shelf A-D: Microcontrollers & Cameras</div>
+            <div>Bench S/T: Hakko Soldering & Tools</div>
+          </div>
+
+        </div>
+
+        <!-- Drawer Footer: System Info -->
+        <div class="pt-4 border-t border-slate-800 text-[11px] font-mono text-slate-500">
+          <div>RAI LAB ENGINE · M0 SCAFFOLD</div>
+          <div class="text-emerald-500/80 mt-0.5">● LocalStorage Sync Ready</div>
+        </div>
+      </aside>
+
+      <!-- ========================================================================= -->
+      <!-- 3. MAIN CONTENT CONTAINER (CONTAINERS FOR EACH TAB VIEW)                  -->
+      <!-- ========================================================================= -->
+      <main id="content-container" class="p-4 sm:p-6 lg:p-8">
+
+        <!-- ===================================================================== -->
+        <!-- VIEW 1: DASHBOARD TAB VIEW                                            -->
+        <!-- ===================================================================== -->
+        <section id="view-dashboard" class="tab-view active space-y-6">
+          <!-- View Header -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-100 font-tech">
+                  ANALYTICS COMMAND CENTER
+                </h1>
+                <span class="font-mono text-xs text-indigo-400 bg-indigo-950/80 px-2 py-0.5 rounded border border-indigo-800/60">
+                  MILESTONE M0
+                </span>
+              </div>
+              <p class="text-xs text-slate-400 mt-1 font-mono">
+                Real-time stock utilization, overdue debt matrix, student major breakdown, and storage telemetry.
+              </p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="switchTab('borrow')" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-sm">
+                <span>Borrow & Return Desk</span>
+                <span class="font-mono">&rarr;</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- M0 Empty State Scaffold Banner -->
+          <div class="rounded-xl border border-indigo-800/60 bg-gradient-to-r from-indigo-950/40 to-slate-900 p-6 shadow-xl">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="flex items-start gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-indigo-600/30 border border-indigo-500/50 flex items-center justify-center text-indigo-300 font-bold shrink-0">
+                  M0
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-indigo-200 uppercase tracking-wide font-tech">
+                    Base Layout Scaffold Initialized
+                  </h3>
+                  <p class="text-xs text-slate-300 mt-1 leading-relaxed max-w-2xl">
+                    The top navigation, auth state indicator, and side summary drawer are active. In <strong>Milestone M3</strong>, this view will render the 10+ command center analytics: Top 10 Borrowed Equipment Leaderboard, Category Stock Allocation, Major & Batch Breakdown, Overdue Risk Table with 1-click Line ID copy, and Location Shelf Maps.
+                  </p>
+                </div>
+              </div>
+              <button onclick="switchTab('inventory')" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 rounded-lg text-xs font-mono shrink-0 transition-colors">
+                View Inventory Scaffold &rarr;
+              </button>
+            </div>
+          </div>
+
+          <!-- Wireframe Placeholder Grid for M3 Analytics -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="rounded-xl border border-dashed border-slate-800 bg-slate-900/40 p-5 flex flex-col justify-between">
+              <div class="flex items-center justify-between text-slate-400 text-xs font-mono">
+                <span>KPI TELEMETRY</span>
+                <span class="text-indigo-400">PENDING M3</span>
+              </div>
+              <div class="my-4">
+                <div class="text-2xl font-bold font-mono text-slate-200">32 Items / 168 Units</div>
+                <div class="text-xs text-slate-500 mt-1">Total lab inventory catalog</div>
+              </div>
+              <div class="w-full bg-slate-800 rounded-full h-1.5">
+                <div class="bg-indigo-500 h-1.5 rounded-full" style="width: 70%"></div>
+              </div>
+            </div>
+
+            <div class="rounded-xl border border-dashed border-slate-800 bg-slate-900/40 p-5 flex flex-col justify-between">
+              <div class="flex items-center justify-between text-slate-400 text-xs font-mono">
+                <span>OVERDUE RISK CENTER</span>
+                <span class="text-rose-400">PENDING M3</span>
+              </div>
+              <div class="my-4">
+                <div class="text-2xl font-bold font-mono text-rose-300">2 Overdue Loans</div>
+                <div class="text-xs text-slate-500 mt-1">Direct student Line ID copy tags</div>
+              </div>
+              <div class="w-full bg-slate-800 rounded-full h-1.5">
+                <div class="bg-rose-500 h-1.5 rounded-full" style="width: 35%"></div>
+              </div>
+            </div>
+
+            <div class="rounded-xl border border-dashed border-slate-800 bg-slate-900/40 p-5 flex flex-col justify-between">
+              <div class="flex items-center justify-between text-slate-400 text-xs font-mono">
+                <span>TOP 10 LEADERBOARD</span>
+                <span class="text-cyan-400">PENDING M3</span>
+              </div>
+              <div class="my-4">
+                <div class="text-2xl font-bold font-mono text-cyan-300">Horizontal Bars</div>
+                <div class="text-xs text-slate-500 mt-1">Borrow frequency leaderboard</div>
+              </div>
+              <div class="w-full bg-slate-800 rounded-full h-1.5">
+                <div class="bg-cyan-500 h-1.5 rounded-full" style="width: 85%"></div>
+              </div>
+            </div>
+
+            <div class="rounded-xl border border-dashed border-slate-800 bg-slate-900/40 p-5 flex flex-col justify-between">
+              <div class="flex items-center justify-between text-slate-400 text-xs font-mono">
+                <span>BATCH & MAJOR MATRIX</span>
+                <span class="text-emerald-400">PENDING M3</span>
+              </div>
+              <div class="my-4">
+                <div class="text-2xl font-bold font-mono text-emerald-300">Batches 67–70</div>
+                <div class="text-xs text-slate-500 mt-1">Mechatronics, Robotics, AI utilization</div>
+              </div>
+              <div class="w-full bg-slate-800 rounded-full h-1.5">
+                <div class="bg-emerald-500 h-1.5 rounded-full" style="width: 60%"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================== -->
+        <!-- VIEW 2: BORROW & RETURN DESK TAB VIEW                                 -->
+        <!-- ===================================================================== -->
+        <section id="view-borrow" class="tab-view space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-100 font-tech">
+                  BORROW & RETURN DESK
+                </h1>
+                <span class="font-mono text-xs text-indigo-400 bg-indigo-950/80 px-2 py-0.5 rounded border border-indigo-800/60">
+                  DISPATCH TERMINAL
+                </span>
+              </div>
+              <p class="text-xs text-slate-400 mt-1 font-mono">
+                Interactive checkout station, return inspection portal, and automatic loan due date calculations.
+              </p>
+            </div>
+          </div>
+
+          <!-- Empty State Container -->
+          <div class="rounded-xl border border-slate-800 bg-slate-900/70 p-8 text-center max-w-2xl mx-auto space-y-4 shadow-xl">
+            <div class="w-14 h-14 rounded-2xl bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 mx-auto">
+              <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-slate-100 font-tech">Borrow & Return Desk Scaffold Ready</h3>
+              <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                This container will house the dedicated check-out workspace in <strong>Milestone M4</strong> (item scanner/picker, student credentials, loan duration calculator, digital loan receipts) and the return & inspection portal in <strong>Milestone M5</strong> (condition grading: Good, Needs Maintenance, Damaged).
+              </p>
+            </div>
+            <div class="pt-2 flex items-center justify-center gap-3">
+              <button onclick="switchTab('inventory')" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition-colors">
+                Browse Inventory First
+              </button>
+              <button onclick="switchTab('dashboard')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold transition-colors">
+                Back to Dashboard
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================== -->
+        <!-- VIEW 3: INVENTORY SEARCH TAB VIEW                                     -->
+        <!-- ===================================================================== -->
+        <section id="view-inventory" class="tab-view space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-100 font-tech">
+                  MASTER INVENTORY CATALOG
+                </h1>
+                <span class="font-mono text-xs text-indigo-400 bg-indigo-950/80 px-2 py-0.5 rounded border border-indigo-800/60">
+                  PRE-SEED READY
+                </span>
+              </div>
+              <p class="text-xs text-slate-400 mt-1 font-mono">
+                Full database catalog with shelf locations, stock meters, category filters, and live search.
+              </p>
+            </div>
+          </div>
+
+          <!-- Empty State Container -->
+          <div class="rounded-xl border border-slate-800 bg-slate-900/70 p-8 text-center max-w-2xl mx-auto space-y-4 shadow-xl">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-600/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 mx-auto">
+              <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-slate-100 font-tech">Master Lab Inventory Scaffold Ready</h3>
+              <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                In <strong>Milestone M2</strong>, this container will load the pre-seeded catalog of 30+ robotics & AI equipment units (Keysight Oscilloscopes, NVIDIA Jetson Orin Nano/AGX, Raspberry Pi 5, LiDAR, RealSense, Dobot arms, Hakko soldering stations) with live stock filters, grid/table switcher, and admin add/edit modals.
+              </p>
+            </div>
+            <div class="pt-2 flex items-center justify-center gap-3">
+              <button onclick="switchTab('borrow')" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition-colors">
+                Go to Borrow Desk
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================== -->
+        <!-- VIEW 4: ADMIN PANEL TAB VIEW                                          -->
+        <!-- ===================================================================== -->
+        <section id="view-admin" class="tab-view space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-100 font-tech">
+                  ADMINISTRATIVE CONTROL PANEL
+                </h1>
+                <span class="font-mono text-xs text-indigo-400 bg-indigo-950/80 px-2 py-0.5 rounded border border-indigo-800/60">
+                  STAFF PRIVILEGES
+                </span>
+              </div>
+              <p class="text-xs text-slate-400 mt-1 font-mono">
+                Student directory, Line contact registry, CSV/JSON report exports, and factory database reset.
+              </p>
+            </div>
+          </div>
+
+          <!-- Empty State Container -->
+          <div class="rounded-xl border border-slate-800 bg-slate-900/70 p-8 text-center max-w-2xl mx-auto space-y-4 shadow-xl">
+            <div class="w-14 h-14 rounded-2xl bg-rose-600/20 border border-rose-500/40 flex items-center justify-center text-rose-400 mx-auto">
+              <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-slate-100 font-tech">Admin Control Panel Scaffold Ready</h3>
+              <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                In <strong>Milestone M1</strong> & <strong>M6</strong>, this panel will display the master student directory with Line contact tags, active loan counts, student registration, CSV/JSON report downloads, and 1-click factory demo reset.
+              </p>
+            </div>
+            <div class="pt-2 flex items-center justify-center gap-3">
+              <button onclick="toggleAuthRole()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition-colors">
+                Toggle Current User Role
+              </button>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 4. INLINE JAVASCRIPT FOR M0 BASE NAVIGATION & LOGIC                       -->
+  <!-- ========================================================================= -->
+  <script>
+    // Current application state
+    const appState = {
+      currentTab: 'dashboard',
+      currentUser: {
+        role: 'ADMIN',
+        userId: 'ADMIN-01',
+        fullName: 'Dr. Thanapat (Lab Director)',
+        lineId: '@director_rai',
+      },
+      isDrawerOpen: false,
+    };
+
+    // Tab switching function
+    function switchTab(tabId) {
+      if (!['dashboard', 'borrow', 'inventory', 'admin'].includes(tabId)) {
+        tabId = 'dashboard';
+      }
+      appState.currentTab = tabId;
+
+      // 1. Update views visibility
+      document.querySelectorAll('.tab-view').forEach(view => {
+        view.classList.remove('active');
+      });
+      const targetView = document.getElementById('view-' + tabId);
+      if (targetView) {
+        targetView.classList.add('active');
+      }
+
+      // 2. Update Top Desktop Nav button styling
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        const btnTab = btn.getAttribute('data-tab');
+        if (btnTab === tabId) {
+          btn.className = 'nav-btn px-3.5 py-1.5 rounded-md text-xs font-semibold bg-indigo-600 text-white shadow-sm transition-all';
+        } else {
+          btn.className = 'nav-btn px-3.5 py-1.5 rounded-md text-xs font-semibold text-slate-400 hover:text-slate-200 transition-all';
+        }
+      });
+
+      // 3. Update Mobile Tab button styling
+      document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+        const btnTab = btn.getAttribute('data-tab');
+        if (btnTab === tabId) {
+          btn.className = 'mobile-nav-btn py-1 px-2.5 rounded text-indigo-400 font-bold';
+        } else {
+          btn.className = 'mobile-nav-btn py-1 px-2.5 rounded text-slate-400';
+        }
+      });
+
+      // 4. Update Drawer Nav item styling
+      document.querySelectorAll('.drawer-nav-item').forEach(item => {
+        const itemTab = item.getAttribute('data-tab');
+        if (itemTab === tabId) {
+          item.classList.add('bg-indigo-950/60', 'text-indigo-300', 'border', 'border-indigo-800/40');
+        } else {
+          item.classList.remove('bg-indigo-950/60', 'text-indigo-300', 'border', 'border-indigo-800/40');
+        }
+      });
+
+      // 5. Close drawer on mobile
+      toggleDrawer(false);
+
+      // 6. Update URL hash
+      window.location.hash = tabId;
+    }
+
+    // Toggle user role between Admin and Student (M0 verification helper)
+    function toggleAuthRole() {
+      if (appState.currentUser.role === 'ADMIN') {
+        appState.currentUser = {
+          role: 'STUDENT',
+          userId: '67010042',
+          fullName: 'Alex Chen (Batch 67)',
+          lineId: '@alex_rai67',
+        };
+      } else {
+        appState.currentUser = {
+          role: 'ADMIN',
+          userId: 'ADMIN-01',
+          fullName: 'Dr. Thanapat (Staff)',
+          lineId: '@director_rai',
+        };
+      }
+      renderAuthPill();
+    }
+
+    // Render Auth Pill UI
+    function renderAuthPill() {
+      const roleLabel = document.getElementById('auth-role-label');
+      const nameLabel = document.getElementById('auth-name-label');
+      const statusDot = document.getElementById('auth-status-dot');
+
+      if (roleLabel) roleLabel.innerText = appState.currentUser.role;
+      if (nameLabel) nameLabel.innerText = appState.currentUser.fullName;
+      if (statusDot) {
+        statusDot.className = appState.currentUser.role === 'ADMIN' 
+          ? 'w-2 h-2 rounded-full bg-emerald-400' 
+          : 'w-2 h-2 rounded-full bg-cyan-400';
+      }
+    }
+
+    // Mobile Drawer Open/Close handler
+    function toggleDrawer(forceState) {
+      const drawer = document.getElementById('side-drawer');
+      const overlay = document.getElementById('drawer-overlay');
+      if (!drawer || !overlay) return;
+
+      if (typeof forceState === 'boolean') {
+        appState.isDrawerOpen = forceState;
+      } else {
+        appState.isDrawerOpen = !appState.isDrawerOpen;
+      }
+
+      if (appState.isDrawerOpen) {
+        drawer.classList.add('open');
+        overlay.classList.add('open');
+      } else {
+        drawer.classList.remove('open');
+        overlay.classList.remove('open');
+      }
+    }
+
+    // Setup Event Listeners upon load
+    window.addEventListener('DOMContentLoaded', () => {
+      // Setup mobile drawer button
+      const toggleBtn = document.getElementById('btn-toggle-drawer');
+      if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => toggleDrawer());
+      }
+
+      // Read initial hash or default to 'dashboard'
+      const hash = window.location.hash.replace('#', '');
+      if (hash && ['dashboard', 'borrow', 'inventory', 'admin'].includes(hash)) {
+        switchTab(hash);
+      } else {
+        switchTab('dashboard');
+      }
+
+      renderAuthPill();
+    });
+  </script>
+</body>
+</html>
