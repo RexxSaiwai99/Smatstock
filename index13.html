@@ -206,7 +206,7 @@
               </span>
               <span class="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/40 px-1.5 py-0.5 rounded">
                 <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-                M1 AUTH ACTIVE
+                M2 INVENTORY LIVE
               </span>
             </div>
             <div class="text-[11px] text-slate-400 font-mono hidden sm:block">
@@ -357,7 +357,7 @@
             <div class="p-3 rounded-lg bg-slate-900/90 border border-slate-800/90 flex items-center justify-between">
               <div>
                 <div class="text-[11px] text-slate-400 font-mono">Total Equipment</div>
-                <div class="text-sm font-bold font-mono text-slate-100">32 Items <span class="text-[11px] text-slate-400 font-normal">(168 units)</span></div>
+                <div id="stat-total-equipment" class="text-sm font-bold font-mono text-slate-100">33 Items <span class="text-[11px] text-slate-400 font-normal">(215 units)</span></div>
               </div>
               <div class="w-8 h-8 rounded bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-mono text-xs font-bold">
                 EQ
@@ -367,7 +367,7 @@
             <div class="p-3 rounded-lg bg-slate-900/90 border border-slate-800/90 flex items-center justify-between">
               <div>
                 <div class="text-[11px] text-slate-400 font-mono">Active Checkouts</div>
-                <div class="text-sm font-bold font-mono text-cyan-300">4 in field</div>
+                <div id="stat-active-checkouts" class="text-sm font-bold font-mono text-cyan-300">89 units on loan</div>
               </div>
               <div class="w-8 h-8 rounded bg-cyan-600/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-mono text-xs font-bold">
                 LN
@@ -479,8 +479,8 @@
                 <span class="text-indigo-400">READY</span>
               </div>
               <div class="my-4">
-                <div class="text-2xl font-bold font-mono text-slate-100">32 Items / 168 Units</div>
-                <div class="text-xs text-slate-400 mt-1">Pre-seeding mapped to cabinets</div>
+                <div id="card-inv-count" class="text-2xl font-bold font-mono text-slate-100">33 Items / 215 Units</div>
+                <div id="card-inv-sub" class="text-xs text-slate-400 mt-1">Live catalog with multi-filter</div>
               </div>
               <div class="w-full bg-slate-800 rounded-full h-1.5">
                 <div class="bg-indigo-500 h-1.5 rounded-full" style="width: 88%"></div>
@@ -561,42 +561,159 @@
         </section>
 
         <!-- ===================================================================== -->
-        <!-- VIEW 3: INVENTORY SEARCH TAB VIEW                                     -->
+        <!-- VIEW 3: INVENTORY SEARCH TAB VIEW (M2 LIVE CATALOG & FILTERING)       -->
         <!-- ===================================================================== -->
         <section id="view-inventory" class="tab-view space-y-6">
+          <!-- Inventory Header -->
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
             <div>
               <div class="flex items-center gap-2">
                 <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-100 font-tech">
                   MASTER INVENTORY CATALOG
                 </h1>
-                <span class="font-mono text-xs text-indigo-400 bg-indigo-950/80 px-2 py-0.5 rounded border border-indigo-800/60">
-                  M2 PRE-SEED READY
+                <span id="inv-active-count-badge" class="font-mono text-xs text-indigo-400 bg-indigo-950/80 px-2 py-0.5 rounded border border-indigo-800/60">
+                  32 ITEMS ENROLLED
                 </span>
               </div>
               <p class="text-xs text-slate-400 mt-1 font-mono">
-                Search laboratory equipment by name, category, shelf/cabinet code, and real-time stock levels.
+                Live search laboratory equipment by Item Name, Serial ID, Brand, and Lab Location (HA1, HE3, RCL).
               </p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="btn-admin-add-item" onclick="openAddItemModal()" class="hidden px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-sm">
+                <span>+ Add Item</span>
+              </button>
+              <div class="flex items-center bg-slate-900 border border-slate-800 rounded-lg p-1">
+                <button id="btn-view-grid" onclick="setInventoryViewMode('GRID')" title="Grid View" class="p-1.5 rounded bg-slate-800 text-white transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                </button>
+                <button id="btn-view-table" onclick="setInventoryViewMode('TABLE')" title="Table View" class="p-1.5 rounded text-slate-400 hover:text-slate-200 transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                </button>
+              </div>
             </div>
           </div>
 
-          <div class="rounded-xl border border-slate-800 bg-slate-900/70 p-8 text-center max-w-2xl mx-auto space-y-4 shadow-xl">
-            <div class="w-14 h-14 rounded-2xl bg-emerald-600/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 mx-auto">
-              <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-              </svg>
+          <!-- Live Search & Multi-Filter Control Bar -->
+          <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/90 shadow-xl space-y-3">
+            <div class="flex flex-col lg:flex-row gap-3">
+              <!-- Live Search Bar -->
+              <div class="relative flex-1">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                  <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+                <input 
+                  type="text" 
+                  id="inv-search-input" 
+                  oninput="handleInventoryFilterChange()" 
+                  placeholder="Live search by Name, Serial ID (e.g. SN-NITRO), Brand (Acer, Fluke), or Location (HA1, HE3, RCL)..." 
+                  class="w-full bg-slate-950 border border-slate-700/80 rounded-lg pl-10 pr-10 py-2.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 font-mono focus:outline-none focus:border-indigo-500 transition-colors"
+                />
+                <button 
+                  id="btn-clear-search" 
+                  onclick="clearInventorySearch()" 
+                  class="hidden absolute inset-y-0 right-0 pr-3.5 flex items-center text-xs font-mono text-slate-400 hover:text-white">
+                  CLEAR
+                </button>
+              </div>
+
+              <!-- Filter Dropdowns Row -->
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 shrink-0 text-xs font-mono">
+                <!-- Category Filter Dropdown -->
+                <div>
+                  <select 
+                    id="inv-filter-category" 
+                    onchange="handleInventoryFilterChange()" 
+                    class="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-3 py-2.5 text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer">
+                    <option value="ALL">All Categories</option>
+                    <option value="Laptop">Laptop</option>
+                    <option value="Projector">Projector</option>
+                    <option value="Tripod">Tripod</option>
+                    <option value="Microcontroller">Microcontroller</option>
+                    <option value="Sensor">Sensor</option>
+                    <option value="Tool">Tool</option>
+                  </select>
+                </div>
+
+                <!-- Status Filter Dropdown -->
+                <div>
+                  <select 
+                    id="inv-filter-status" 
+                    onchange="handleInventoryFilterChange()" 
+                    class="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-3 py-2.5 text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer">
+                    <option value="ALL">All Stock Statuses</option>
+                    <option value="IN_STOCK">In Stock (Available)</option>
+                    <option value="BORROWED">Borrowed (In Field)</option>
+                    <option value="OUT_OF_STOCK">Out of Stock (0 units)</option>
+                  </select>
+                </div>
+
+                <!-- Location Filter Dropdown -->
+                <div class="col-span-2 sm:col-span-1">
+                  <select 
+                    id="inv-filter-location" 
+                    onchange="handleInventoryFilterChange()" 
+                    class="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-3 py-2.5 text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer">
+                    <option value="ALL">All Locations</option>
+                    <option value="HA1">Location HA1</option>
+                    <option value="HE3">Location HE3</option>
+                    <option value="RCL">Location RCL</option>
+                  </select>
+                </div>
+              </div>
             </div>
-            <div>
-              <h3 class="text-base font-bold text-slate-100 font-tech">Catalog Container Ready</h3>
-              <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">
-                Will contain the complete database of 30+ robotics items (Keysight Oscilloscopes, NVIDIA Jetson modules, Raspberry Pi 5, LiDAR scanners, RealSense cameras) with shelf locations and borrow buttons.
-              </p>
+
+            <!-- Active Filter Stats / Summary Bar -->
+            <div class="flex items-center justify-between text-[11px] font-mono text-slate-400 pt-2 border-t border-slate-800/80">
+              <div id="inv-results-summary">Showing 32 of 32 items</div>
+              <div class="flex items-center gap-3">
+                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> In Stock (&gt;2)</span>
+                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-400"></span> Low Stock (1-2)</span>
+                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-rose-400"></span> Out of Stock (0)</span>
+              </div>
             </div>
-            <div class="pt-2 flex items-center justify-center gap-3">
-              <button onclick="switchTab('borrow')" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition-colors">
-                Go to Borrow Desk
-              </button>
+          </div>
+
+          <!-- Inventory Results Container: Grid View -->
+          <div id="inv-grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Dynamically populated by JavaScript -->
+          </div>
+
+          <!-- Inventory Results Container: Table View -->
+          <div id="inv-table-container" class="hidden rounded-xl border border-slate-800 bg-slate-900/90 shadow-xl overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs font-mono">
+                <thead>
+                  <tr class="border-b border-slate-800 text-slate-400 bg-slate-950/70 text-[11px]">
+                    <th class="p-3 font-normal">SERIAL / ID</th>
+                    <th class="p-3 font-normal">ITEM NAME & SPECS</th>
+                    <th class="p-3 font-normal">BRAND</th>
+                    <th class="p-3 font-normal">CATEGORY</th>
+                    <th class="p-3 font-normal">LOCATION</th>
+                    <th class="p-3 font-normal">STOCK QTY</th>
+                    <th class="p-3 font-normal">STATUS</th>
+                    <th class="p-3 font-normal text-right">ACTION</th>
+                  </tr>
+                </thead>
+                <tbody id="inv-table-tbody" class="divide-y divide-slate-800/80">
+                  <!-- Dynamically populated by JavaScript -->
+                </tbody>
+              </table>
             </div>
+          </div>
+
+          <!-- Empty State (No Search Match) -->
+          <div id="inv-empty-state" class="hidden rounded-xl border border-dashed border-slate-800 bg-slate-900/40 p-12 text-center max-w-md mx-auto space-y-3 font-mono text-xs">
+            <div class="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center text-slate-400 mx-auto text-lg">
+              🔍
+            </div>
+            <div class="text-slate-200 font-bold">No matching equipment found</div>
+            <p class="text-slate-400 text-[11px]">
+              No items match the active query and filters. Try clearing your search term or adjusting category/location filters.
+            </p>
+            <button onclick="clearInventorySearch(true)" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-xs">
+              Reset Filters
+            </button>
           </div>
         </section>
 
@@ -667,7 +784,7 @@
               System Operations & Test Controls
             </h2>
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <button onclick="openAuthModal('signup')" class="p-3.5 rounded-lg bg-slate-950 border border-slate-800 hover:border-emerald-500/60 text-left transition-colors flex items-center justify-between">
                 <div>
                   <div class="font-semibold text-slate-200 text-xs">Register New Student</div>
@@ -682,6 +799,14 @@
                   <div class="text-[10px] text-slate-400 font-mono mt-0.5">Test student vs admin view</div>
                 </div>
                 <span class="text-indigo-400 font-mono text-xs">LOGIN &rarr;</span>
+              </button>
+
+              <button onclick="resetFactoryInventory()" class="p-3.5 rounded-lg bg-indigo-950/20 border border-indigo-900/40 hover:border-indigo-700/60 text-left transition-colors flex items-center justify-between">
+                <div>
+                  <div class="font-semibold text-indigo-200 text-xs">Reset Catalog Database</div>
+                  <div class="text-[10px] text-indigo-400 font-mono mt-0.5">Restores 33 factory seed items</div>
+                </div>
+                <span class="text-indigo-400 font-mono text-xs">RESTORE</span>
               </button>
 
               <button onclick="resetFactoryUsers()" class="p-3.5 rounded-lg bg-rose-950/20 border border-rose-900/40 hover:border-rose-700/60 text-left transition-colors flex items-center justify-between">
@@ -924,6 +1049,74 @@
     </div>
   </div>
 
+  <!-- Add Item Modal (Admin Feature) -->
+  <div id="add-item-modal" class="modal-backdrop">
+    <div class="w-full max-w-lg rounded-2xl border border-slate-800 bg-[#0c1222] shadow-2xl overflow-hidden backdrop-blur-md">
+      <div class="flex items-center justify-between border-b border-slate-800 bg-slate-950/70 px-6 py-4">
+        <div>
+          <h3 class="text-sm font-bold text-slate-100 font-tech">Register New Equipment to Catalog</h3>
+          <p class="text-[11px] font-mono text-indigo-400">Inventory Database Enrollment</p>
+        </div>
+        <button onclick="closeAddItemModal()" class="text-slate-400 hover:text-white font-mono text-sm">✕</button>
+      </div>
+      <form id="add-item-form" onsubmit="handleAddItemSubmit(event)" class="p-6 space-y-3 font-mono text-xs">
+        <div>
+          <label class="block text-slate-300 font-bold mb-1">ITEM NAME *</label>
+          <input type="text" id="add-item-name" required placeholder="e.g. ACER Nitro 5 Gaming Laptop" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3.5 py-2 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-300 font-bold mb-1">SERIAL ID (e.g. SN-xxx) *</label>
+            <input type="text" id="add-item-serial" required placeholder="e.g. SN-NITRO-5541" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3.5 py-2 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block text-slate-300 font-bold mb-1">BRAND / MANUFACTURER *</label>
+            <input type="text" id="add-item-brand" required placeholder="e.g. Acer" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3.5 py-2 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-300 font-bold mb-1">CATEGORY *</label>
+            <select id="add-item-category" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3.5 py-2 text-slate-100 focus:outline-none focus:border-indigo-500 cursor-pointer">
+              <option value="Laptop">Laptop</option>
+              <option value="Projector">Projector</option>
+              <option value="Tripod">Tripod</option>
+              <option value="Microcontroller">Microcontroller</option>
+              <option value="Sensor">Sensor</option>
+              <option value="Tool">Tool</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-slate-300 font-bold mb-1">LOCATION CODE *</label>
+            <select id="add-item-location" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3.5 py-2 text-slate-100 focus:outline-none focus:border-indigo-500 cursor-pointer">
+              <option value="HA1">HA1 (Hardware Area 1)</option>
+              <option value="HE3">HE3 (High-End Lab 3)</option>
+              <option value="RCL">RCL (Robotics Center Lab)</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-300 font-bold mb-1">TOTAL QUANTITY *</label>
+            <input type="number" id="add-item-total-qty" min="1" value="5" required class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3.5 py-2 text-slate-100 focus:outline-none focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block text-slate-300 font-bold mb-1">AVAILABLE QUANTITY *</label>
+            <input type="number" id="add-item-avail-qty" min="0" value="5" required class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3.5 py-2 text-slate-100 focus:outline-none focus:border-indigo-500">
+          </div>
+        </div>
+        <div>
+          <label class="block text-slate-300 font-bold mb-1">SPECS & DESCRIPTION</label>
+          <input type="text" id="add-item-specs" placeholder="e.g. Intel Core i7, 16GB RAM, RTX 3060, 512GB SSD" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3.5 py-2 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+        </div>
+        <div class="pt-2 flex items-center justify-end gap-2 font-sans">
+          <button type="button" onclick="closeAddItemModal()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded text-xs font-semibold">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-xs font-semibold">Save Equipment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Toast Notification Container -->
   <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm pointer-events-none"></div>
 
@@ -934,6 +1127,7 @@
     // Storage keys
     const STORAGE_KEY_SESSION = 'rai_auth_session_m1';
     const STORAGE_KEY_USERS = 'rai_users_db_m1';
+    const STORAGE_KEY_INVENTORY = 'rai_inventory_db_m2';
 
     // Default Pre-Seeded Users
     const DEFAULT_USERS = [
@@ -984,11 +1178,424 @@
       }
     ];
 
+    // 33 Realistic Pre-Seeded Equipment Records matching schema.md
+    const DEFAULT_ITEMS = [
+      // --- LAPTOPS ---
+      {
+        itemId: 'LAP-ACER-01',
+        name: 'ACER Nitro 5 Gaming Laptop',
+        serialId: 'SN-NITRO-5541',
+        brand: 'Acer',
+        category: 'Laptop',
+        location: 'HA1',
+        totalQty: 5,
+        availableQty: 1, // Low stock <= 2, 4 Borrowed
+        borrowCount: 38,
+        specs: 'Intel Core i7-12700H, 16GB DDR4, RTX 3060, 512GB NVMe SSD'
+      },
+      {
+        itemId: 'LAP-ASUS-01',
+        name: 'ASUS TUF Dash F15 AI Laptop',
+        serialId: 'SN-TUF-8820',
+        brand: 'Asus',
+        category: 'Laptop',
+        location: 'HA1',
+        totalQty: 4,
+        availableQty: 4, // In stock
+        borrowCount: 22,
+        specs: 'Intel Core i7-12650H, 16GB RAM, RTX 3070, 15.6" 144Hz IPS'
+      },
+      {
+        itemId: 'LAP-LEN-01',
+        name: 'Lenovo Legion 5 Pro ROS2 Workstation',
+        serialId: 'SN-LEGION-4112',
+        brand: 'Lenovo',
+        category: 'Laptop',
+        location: 'RCL',
+        totalQty: 3,
+        availableQty: 0, // Out of stock, 3 Borrowed
+        borrowCount: 45,
+        specs: 'AMD Ryzen 7 5800H, 32GB RAM, RTX 3070 140W, 1TB NVMe, Ubuntu 22.04'
+      },
+
+      // --- PROJECTORS ---
+      {
+        itemId: 'PROJ-EPS-01',
+        name: 'Epson EB-FH52 Full HD 3LCD Projector',
+        serialId: 'SN-EPS-9201',
+        brand: 'Epson',
+        category: 'Projector',
+        location: 'HE3',
+        totalQty: 3,
+        availableQty: 2, // Low stock, 1 Borrowed
+        borrowCount: 16,
+        specs: '4000 Lumens, 1080p Full HD, Miracast wireless, Dual HDMI ports'
+      },
+      {
+        itemId: 'PROJ-BENQ-01',
+        name: 'BenQ MH535 Classroom DLP Projector',
+        serialId: 'SN-BENQ-5350',
+        brand: 'BenQ',
+        category: 'Projector',
+        location: 'HE3',
+        totalQty: 2,
+        availableQty: 0, // Out of stock, 2 Borrowed
+        borrowCount: 24,
+        specs: '3600 Lumens, 15,000:1 contrast, dual HDMI, smart eco mode'
+      },
+
+      // --- TRIPODS ---
+      {
+        itemId: 'TRI-FOTO-01',
+        name: 'Fotopro DIGI-3400 Pro Aluminum Tripod',
+        serialId: 'SN-FOTO-3400',
+        brand: 'Fotopro',
+        category: 'Tripod',
+        location: 'HA1',
+        totalQty: 8,
+        availableQty: 5, // In stock, 3 Borrowed
+        borrowCount: 31,
+        specs: 'Max height 151cm, payload 4kg, 3-way pan head, quick release plate'
+      },
+      {
+        itemId: 'TRI-MANF-01',
+        name: 'Manfrotto Befree Advanced Carbon Tripod',
+        serialId: 'SN-MANF-2281',
+        brand: 'Manfrotto',
+        category: 'Tripod',
+        location: 'RCL',
+        totalQty: 3,
+        availableQty: 1, // Low stock, 2 Borrowed
+        borrowCount: 19,
+        specs: 'Carbon fiber legs, 494 ball head, 9kg payload, travel compact'
+      },
+
+      // --- MICROCONTROLLERS ---
+      {
+        itemId: 'MCU-RPI4-01',
+        name: 'Raspberry Pi 4B (8GB RAM) Embedded Board',
+        serialId: 'SN-RPI4-8842',
+        brand: 'Raspberry Pi',
+        category: 'Microcontroller',
+        location: 'HE3',
+        totalQty: 12,
+        availableQty: 7, // In stock, 5 Borrowed
+        borrowCount: 62,
+        specs: 'Quad-core Cortex-A72 @ 1.5GHz, 8GB LPDDR4, dual 4K micro-HDMI, Gigabit Eth'
+      },
+      {
+        itemId: 'MCU-RPI5-01',
+        name: 'Raspberry Pi 5 8GB Starter Kit',
+        serialId: 'SN-RPI5-2024',
+        brand: 'Raspberry Pi',
+        category: 'Microcontroller',
+        location: 'HE3',
+        totalQty: 10,
+        availableQty: 4, // In stock, 6 Borrowed
+        borrowCount: 58,
+        specs: 'Broadcom BCM2712 Quad Cortex-A76 @ 2.4GHz, PCIe 2.0, dual camera/display DSI'
+      },
+      {
+        itemId: 'MCU-JET-01',
+        name: 'NVIDIA Jetson Orin Nano Developer Kit (8GB)',
+        serialId: 'SN-JET-0801',
+        brand: 'NVIDIA',
+        category: 'Microcontroller',
+        location: 'RCL',
+        totalQty: 6,
+        availableQty: 1, // Low stock, 5 Borrowed
+        borrowCount: 42,
+        specs: '40 TOPS AI, Ampere GPU, 6-core ARM CPU, M.2 Key-M NVMe slot'
+      },
+      {
+        itemId: 'MCU-JET-02',
+        name: 'NVIDIA Jetson AGX Orin 64GB Industrial Module',
+        serialId: 'SN-JET-6402',
+        brand: 'NVIDIA',
+        category: 'Microcontroller',
+        location: 'RCL',
+        totalQty: 3,
+        availableQty: 0, // Out of stock, 3 Borrowed
+        borrowCount: 28,
+        specs: '275 TOPS AI compute, 2048-core NVIDIA Ampere, 64-bit 12-core ARM'
+      },
+      {
+        itemId: 'MCU-ARD-01',
+        name: 'Arduino Portenta H7 Dual-Core Industrial Board',
+        serialId: 'SN-ARD-7701',
+        brand: 'Arduino',
+        category: 'Microcontroller',
+        location: 'HA1',
+        totalQty: 8,
+        availableQty: 6, // In stock, 2 Borrowed
+        borrowCount: 26,
+        specs: 'Dual-core STM32H747 (Cortex-M7 @ 480MHz + Cortex-M4 @ 240MHz)'
+      },
+      {
+        itemId: 'MCU-ESP-01',
+        name: 'ESP32-S3 WROOM Dual MCU with OV2640 Camera',
+        serialId: 'SN-ESP-3320',
+        brand: 'Espressif',
+        category: 'Microcontroller',
+        location: 'HE3',
+        totalQty: 16,
+        availableQty: 11, // In stock, 5 Borrowed
+        borrowCount: 48,
+        specs: 'Dual-core 32-bit LX7 @ 240MHz, 2.4GHz Wi-Fi + BLE 5, 2MP camera'
+      },
+      {
+        itemId: 'MCU-TEEN-01',
+        name: 'Teensy 4.1 Development Board with Ethernet',
+        serialId: 'SN-TEEN-4100',
+        brand: 'PJRC',
+        category: 'Microcontroller',
+        location: 'HA1',
+        totalQty: 6,
+        availableQty: 3, // In stock, 3 Borrowed
+        borrowCount: 29,
+        specs: 'ARM Cortex-M7 @ 600 MHz, 1024K RAM, Native 100Mbit Ethernet PHY'
+      },
+
+      // --- SENSORS ---
+      {
+        itemId: 'SENS-CAM-01',
+        name: 'Intel RealSense Depth Camera D435i with IMU',
+        serialId: 'SN-CAM-4351',
+        brand: 'Intel',
+        category: 'Sensor',
+        location: 'RCL',
+        totalQty: 6,
+        availableQty: 1, // Low stock, 5 Borrowed
+        borrowCount: 39,
+        specs: 'Stereo RGB-D 1920x1080 RGB, 1280x720 Depth @ 90fps, BMI055 6-DOF IMU'
+      },
+      {
+        itemId: 'SENS-CAM-02',
+        name: 'Matrix Vision Industrial GigE Vision Camera',
+        serialId: 'SN-CAM-9022',
+        brand: 'Matrix Vision',
+        category: 'Sensor',
+        location: 'HE3',
+        totalQty: 3,
+        availableQty: 0, // Out of stock, 3 Borrowed
+        borrowCount: 17,
+        specs: 'Sony Pregius CMOS global shutter, Gigabit Ethernet, GenICam compliant'
+      },
+      {
+        itemId: 'SENS-LID-01',
+        name: 'Slamtec RPLIDAR A2M8 360 Laser Scanner',
+        serialId: 'SN-LID-2080',
+        brand: 'Slamtec',
+        category: 'Sensor',
+        location: 'RCL',
+        totalQty: 7,
+        availableQty: 3, // In stock, 4 Borrowed
+        borrowCount: 36,
+        specs: '12m range, 8000 samples/sec, 10Hz rotation rate, 360 triangulation'
+      },
+      {
+        itemId: 'SENS-LID-02',
+        name: 'Benewake TFmini-S Micro Solid-State LiDAR',
+        serialId: 'SN-LID-1200',
+        brand: 'Benewake',
+        category: 'Sensor',
+        location: 'RCL',
+        totalQty: 10,
+        availableQty: 7, // In stock, 3 Borrowed
+        borrowCount: 21,
+        specs: '0.1-12m distance, 100Hz frequency, UART/I2C interface, 5g ultra-compact'
+      },
+      {
+        itemId: 'SENS-IMU-01',
+        name: 'Hillcrest BNO085 9-DOF Robotic IMU Module',
+        serialId: 'SN-IMU-0850',
+        brand: 'Hillcrest',
+        category: 'Sensor',
+        location: 'HA1',
+        totalQty: 12,
+        availableQty: 9, // In stock, 3 Borrowed
+        borrowCount: 27,
+        specs: 'Built-in SH-2 sensor fusion, heading drift < 0.5 deg/min, I2C/SPI'
+      },
+      {
+        itemId: 'SENS-COR-01',
+        name: 'Google Coral USB Accelerator Edge TPU',
+        serialId: 'SN-COR-4001',
+        brand: 'Google',
+        category: 'Sensor',
+        location: 'RCL',
+        totalQty: 8,
+        availableQty: 5, // In stock, 3 Borrowed
+        borrowCount: 33,
+        specs: '4 TOPS edge TPU coprocessor via USB 3.0 Type-C, TensorFlow Lite'
+      },
+
+      // --- TOOLS & INSTRUMENTS ---
+      {
+        itemId: 'TOOL-FLUKE-01',
+        name: 'Fluke 87V Industrial True-RMS Multimeter',
+        serialId: 'SN-FLUKE-87V',
+        brand: 'Fluke',
+        category: 'Tool',
+        location: 'HA1',
+        totalQty: 10,
+        availableQty: 4, // In stock, 6 Borrowed
+        borrowCount: 72,
+        specs: '0.05% DC accuracy, 20000 counts, low-pass filter, CAT III 1000V'
+      },
+      {
+        itemId: 'TOOL-VIC-01',
+        name: 'Victor 86E High-Precision PC-Link Multimeter',
+        serialId: 'SN-VIC-8600',
+        brand: 'Victor',
+        category: 'Tool',
+        location: 'HA1',
+        totalQty: 6,
+        availableQty: 5, // In stock, 1 Borrowed
+        borrowCount: 20,
+        specs: 'USB optical interface, 4 4/5 digit, 22000 count, PC logging'
+      },
+      {
+        itemId: 'TOOL-OSC-01',
+        name: 'Keysight InfiniiVision DSOX1204G 200MHz Oscilloscope',
+        serialId: 'SN-KEY-1204',
+        brand: 'Keysight',
+        category: 'Tool',
+        location: 'HE3',
+        totalQty: 5,
+        availableQty: 2, // Low stock, 3 Borrowed
+        borrowCount: 46,
+        specs: '4 Channels, 200MHz Bandwidth, 2 GSa/s, WaveGen Generator'
+      },
+      {
+        itemId: 'TOOL-OSC-02',
+        name: 'Siglent SDS1104X-E 100MHz 4-Channel Oscilloscope',
+        serialId: 'SN-SIG-1104',
+        brand: 'Siglent',
+        category: 'Tool',
+        location: 'HE3',
+        totalQty: 6,
+        availableQty: 4, // In stock, 2 Borrowed
+        borrowCount: 34,
+        specs: '4 Channels, 100MHz, 1 GSa/s, 14 Mpts memory depth, Serial Bus Decode'
+      },
+      {
+        itemId: 'TOOL-PWR-01',
+        name: 'Rigol DP832 Triple-Output Programmable DC Supply',
+        serialId: 'SN-RIG-8320',
+        brand: 'Rigol',
+        category: 'Tool',
+        location: 'HE3',
+        totalQty: 4,
+        availableQty: 1, // Low stock, 3 Borrowed
+        borrowCount: 38,
+        specs: '3 Channels (CH1: 30V/3A, CH2: 30V/3A, CH3: 5V/3A), 195W total, LAN/USB'
+      },
+      {
+        itemId: 'TOOL-LOG-01',
+        name: 'Saleae Logic Pro 16 USB Logic Analyzer',
+        serialId: 'SN-SAL-1600',
+        brand: 'Saleae',
+        category: 'Tool',
+        location: 'RCL',
+        totalQty: 4,
+        availableQty: 2, // Low stock, 2 Borrowed
+        borrowCount: 29,
+        specs: '16 digital/analog channels, 500 MS/s digital, 50 MS/s analog, USB 3.0'
+      },
+      {
+        itemId: 'TOOL-HAK-01',
+        name: 'Hakko FX-888D ESD-Safe Digital Soldering Station',
+        serialId: 'SN-HAK-8880',
+        brand: 'Hakko',
+        category: 'Tool',
+        location: 'HA1',
+        totalQty: 8,
+        availableQty: 5, // In stock, 3 Borrowed
+        borrowCount: 54,
+        specs: '70W heater, 50C-480C range, digital lock, ceramic heating core'
+      },
+      {
+        itemId: 'TOOL-TS1-01',
+        name: 'TS101 Smart OLED USB-PD Portable Soldering Iron',
+        serialId: 'SN-TS1-1010',
+        brand: 'Miniware',
+        category: 'Tool',
+        location: 'HA1',
+        totalQty: 6,
+        availableQty: 3, // In stock, 3 Borrowed
+        borrowCount: 35,
+        specs: 'USB PD 65W / DC 90W input, OLED screen, firmware upgradeable'
+      },
+      {
+        itemId: 'TOOL-KNIP-01',
+        name: 'Knipex Precision Electronics Wire Strippers',
+        serialId: 'SN-KNP-1620',
+        brand: 'Knipex',
+        category: 'Tool',
+        location: 'HA1',
+        totalQty: 10,
+        availableQty: 6, // In stock, 4 Borrowed
+        borrowCount: 47,
+        specs: 'AWG 30 to 18 capacity, laser-hardened induction cutting edges, ESD grips'
+      },
+      {
+        itemId: 'TOOL-WIHA-01',
+        name: 'Wiha ESD-Safe Micro-Bit Screwdriver Master Set',
+        serialId: 'SN-WIH-6500',
+        brand: 'Wiha',
+        category: 'Tool',
+        location: 'HA1',
+        totalQty: 5,
+        availableQty: 1, // Low stock, 4 Borrowed
+        borrowCount: 32,
+        specs: '65-piece ESD handle, Torx, Hex, Phillips, Pentalobe hardened steel'
+      },
+      {
+        itemId: 'TOOL-CAN-01',
+        name: 'CANable 2.0 USB to CAN Bus Interface Adapter',
+        serialId: 'SN-CAN-2000',
+        brand: 'CANable',
+        category: 'Tool',
+        location: 'RCL',
+        totalQty: 8,
+        availableQty: 4, // In stock, 4 Borrowed
+        borrowCount: 30,
+        specs: 'SocketCAN native support on Linux, candlelight firmware, isolated transceiver'
+      },
+      {
+        itemId: 'TOOL-ST-01',
+        name: 'STMicroelectronics ST-LINK/V3SET Hardware Debugger',
+        serialId: 'SN-STL-3000',
+        brand: 'STMicroelectronics',
+        category: 'Tool',
+        location: 'RCL',
+        totalQty: 6,
+        availableQty: 3, // In stock, 3 Borrowed
+        borrowCount: 22,
+        specs: 'JTAG/SWD, VCP COM port, SPI/I2C/CAN bridge interface, multi-path probe'
+      },
+      {
+        itemId: 'TOOL-DISP-01',
+        name: 'Waveshare 7-inch DSI Touch LCD Panel',
+        serialId: 'SN-WAV-7000',
+        brand: 'Waveshare',
+        category: 'Tool',
+        location: 'HE3',
+        totalQty: 7,
+        availableQty: 4, // In stock, 3 Borrowed
+        borrowCount: 24,
+        specs: '1024x600 IPS panel, 5-point capacitive touch, MIPI DSI ribbon cable'
+      }
+    ];
+
     // App State
     let appUsers = [];
+    let appInventory = [];
     let currentUser = null;
     let currentTab = 'dashboard';
     let isDrawerOpen = false;
+    let inventoryViewMode = 'GRID';
 
     // Toast Alert Helper
     function showToast(message, type = 'info') {
@@ -1089,6 +1696,12 @@
         drawerNavAdmin.style.display = isAdmin ? 'flex' : 'none';
       }
 
+      // Admin Add Equipment Button in Inventory
+      const btnAddInv = document.getElementById('btn-admin-add-item');
+      if (btnAddInv) {
+        btnAddInv.style.display = isAdmin ? 'inline-flex' : 'none';
+      }
+
       // If user was on admin tab and switched to student, redirect to dashboard
       if (!isAdmin && currentTab === 'admin') {
         switchTab('dashboard');
@@ -1146,6 +1759,11 @@
           <div class="text-[10px] text-indigo-400 font-mono">${currentUser.role} · ID: ${currentUser.userId}</div>
           <div class="text-[10px] text-emerald-400 font-mono mt-1">Line: ${currentUser.lineId}</div>
         `;
+      }
+
+      // Refresh inventory items to update admin controls
+      if (appInventory && appInventory.length > 0) {
+        handleInventoryFilterChange();
       }
     }
 
@@ -1505,10 +2123,521 @@
       }
     }
 
+    // =========================================================================
+    // M2: INVENTORY DATABASE, LIVE MULTI-FILTERING & CATALOG MANAGEMENT
+    // =========================================================================
+
+    // Category styling badge helper
+    function getCategoryBadge(category) {
+      switch (category) {
+        case 'Laptop':
+          return '<span class="px-2 py-0.5 rounded text-[10px] font-mono bg-purple-950/80 text-purple-300 border border-purple-800/60 font-semibold">Laptop</span>';
+        case 'Projector':
+          return '<span class="px-2 py-0.5 rounded text-[10px] font-mono bg-sky-950/80 text-sky-300 border border-sky-800/60 font-semibold">Projector</span>';
+        case 'Tripod':
+          return '<span class="px-2 py-0.5 rounded text-[10px] font-mono bg-orange-950/80 text-orange-300 border border-orange-800/60 font-semibold">Tripod</span>';
+        case 'Microcontroller':
+          return '<span class="px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-950/80 text-cyan-300 border border-cyan-800/60 font-semibold">Microcontroller</span>';
+        case 'Sensor':
+          return '<span class="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-950/80 text-emerald-300 border border-emerald-800/60 font-semibold">Sensor</span>';
+        case 'Tool':
+          return '<span class="px-2 py-0.5 rounded text-[10px] font-mono bg-amber-950/80 text-amber-300 border border-amber-800/60 font-semibold">Tool</span>';
+        default:
+          return `<span class="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-800 text-slate-300 border border-slate-700 font-semibold">${category}</span>`;
+      }
+    }
+
+    // Stock pill indicator (Green = Available > 2, Yellow = Low Stock 1-2, Red = Out of Stock 0)
+    function getStockPill(item) {
+      const avail = Number(item.availableQty);
+      const total = Number(item.totalQty);
+      if (avail === 0) {
+        return `
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-bold bg-rose-950/90 text-rose-300 border border-rose-800/70 shadow-inner">
+            <span class="w-2 h-2 rounded-full bg-rose-400"></span>
+            Out of Stock (0/${total})
+          </span>
+        `;
+      } else if (avail <= 2) {
+        return `
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-bold bg-amber-950/90 text-amber-300 border border-amber-800/70 shadow-inner">
+            <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+            Low Stock (${avail}/${total})
+          </span>
+        `;
+      } else {
+        return `
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-bold bg-emerald-950/90 text-emerald-300 border border-emerald-800/70 shadow-inner">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            Available (${avail}/${total})
+          </span>
+        `;
+      }
+    }
+
+    // Initialize Inventory from LocalStorage
+    function initInventory() {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY_INVENTORY);
+        if (stored) {
+          appInventory = JSON.parse(stored);
+        } else {
+          appInventory = [...DEFAULT_ITEMS];
+          localStorage.setItem(STORAGE_KEY_INVENTORY, JSON.stringify(appInventory));
+        }
+      } catch (e) {
+        appInventory = [...DEFAULT_ITEMS];
+      }
+      updateInventoryTelemetry();
+      handleInventoryFilterChange();
+    }
+
+    // Save Inventory to LocalStorage
+    function saveInventory() {
+      localStorage.setItem(STORAGE_KEY_INVENTORY, JSON.stringify(appInventory));
+      updateInventoryTelemetry();
+    }
+
+    // Update Telemetry & Badges across the interface
+    function updateInventoryTelemetry() {
+      const totalItems = appInventory.length;
+      const totalUnits = appInventory.reduce((sum, it) => sum + (Number(it.totalQty) || 0), 0);
+      const availUnits = appInventory.reduce((sum, it) => sum + (Number(it.availableQty) || 0), 0);
+      const loanedUnits = Math.max(0, totalUnits - availUnits);
+
+      // Header & Active Badge
+      const countBadge = document.getElementById('inv-active-count-badge');
+      if (countBadge) {
+        countBadge.innerText = `${totalItems} ITEMS ENROLLED`;
+      }
+
+      // Drawer Total Equipment Stat
+      const drawerEquipmentStat = document.getElementById('stat-total-equipment');
+      if (drawerEquipmentStat) {
+        drawerEquipmentStat.innerHTML = `${totalItems} Items <span class="text-[11px] text-slate-400 font-normal">(${totalUnits} units)</span>`;
+      }
+
+      // Drawer Active Checkouts Stat
+      const drawerCheckoutStat = document.getElementById('stat-active-checkouts');
+      if (drawerCheckoutStat) {
+        drawerCheckoutStat.innerText = `${loanedUnits} units on loan`;
+      }
+
+      // Dashboard Inventory Card
+      const cardInvCount = document.getElementById('card-inv-count');
+      if (cardInvCount) {
+        cardInvCount.innerText = `${totalItems} Items / ${totalUnits} Units`;
+      }
+    }
+
+    // Filter Inventory by Query, Category, Status, and Location
+    function handleInventoryFilterChange() {
+      const searchInput = document.getElementById('inv-search-input');
+      const categoryFilter = document.getElementById('inv-filter-category');
+      const statusFilter = document.getElementById('inv-filter-status');
+      const locationFilter = document.getElementById('inv-filter-location');
+      const clearBtn = document.getElementById('btn-clear-search');
+
+      const query = (searchInput ? searchInput.value : '').toLowerCase().trim();
+      const cat = categoryFilter ? categoryFilter.value : 'ALL';
+      const status = statusFilter ? statusFilter.value : 'ALL';
+      const loc = locationFilter ? locationFilter.value : 'ALL';
+
+      if (clearBtn) {
+        if (query.length > 0) {
+          clearBtn.classList.remove('hidden');
+        } else {
+          clearBtn.classList.add('hidden');
+        }
+      }
+
+      const filtered = appInventory.filter(item => {
+        // Query search across Name, Serial ID, Brand, Location, Specs, Category
+        if (query) {
+          const matchName = item.name && item.name.toLowerCase().includes(query);
+          const matchSerial = item.serialId && item.serialId.toLowerCase().includes(query);
+          const matchBrand = item.brand && item.brand.toLowerCase().includes(query);
+          const matchLoc = item.location && item.location.toLowerCase().includes(query);
+          const matchSpecs = item.specs && item.specs.toLowerCase().includes(query);
+          const matchCat = item.category && item.category.toLowerCase().includes(query);
+          if (!matchName && !matchSerial && !matchBrand && !matchLoc && !matchSpecs && !matchCat) {
+            return false;
+          }
+        }
+
+        // Category filter
+        if (cat !== 'ALL' && item.category !== cat) {
+          return false;
+        }
+
+        // Location filter
+        if (loc !== 'ALL' && item.location !== loc) {
+          return false;
+        }
+
+        // Status filter
+        if (status === 'IN_STOCK' && Number(item.availableQty) <= 2) {
+          return false;
+        }
+        if (status === 'BORROWED' && (Number(item.totalQty) - Number(item.availableQty)) <= 0) {
+          return false;
+        }
+        if (status === 'OUT_OF_STOCK' && Number(item.availableQty) !== 0) {
+          return false;
+        }
+
+        return true;
+      });
+
+      renderInventory(filtered);
+    }
+
+    // Render Inventory in Grid or Table view
+    function renderInventory(items) {
+      const summaryLabel = document.getElementById('inv-results-summary');
+      const emptyState = document.getElementById('inv-empty-state');
+      const gridContainer = document.getElementById('inv-grid-container');
+      const tableContainer = document.getElementById('inv-table-container');
+      const tableTbody = document.getElementById('inv-table-tbody');
+
+      if (summaryLabel) {
+        summaryLabel.innerText = `Showing ${items.length} of ${appInventory.length} items`;
+      }
+
+      // Empty State handling
+      if (!items || items.length === 0) {
+        if (emptyState) emptyState.classList.remove('hidden');
+        if (gridContainer) gridContainer.classList.add('hidden');
+        if (tableContainer) tableContainer.classList.add('hidden');
+        return;
+      }
+
+      if (emptyState) emptyState.classList.add('hidden');
+
+      // View mode toggling
+      if (inventoryViewMode === 'GRID') {
+        if (gridContainer) gridContainer.classList.remove('hidden');
+        if (tableContainer) tableContainer.classList.add('hidden');
+      } else {
+        if (gridContainer) gridContainer.classList.add('hidden');
+        if (tableContainer) tableContainer.classList.remove('hidden');
+      }
+
+      const isAdmin = currentUser && currentUser.role === 'ADMIN';
+
+      // 1. Render Grid
+      if (gridContainer) {
+        gridContainer.innerHTML = items.map(item => {
+          const avail = Number(item.availableQty);
+          const total = Number(item.totalQty);
+          const borrowed = Math.max(0, total - avail);
+          const canBorrow = avail > 0;
+
+          return `
+            <div class="bg-slate-900/90 border border-slate-800/90 hover:border-indigo-500/50 rounded-xl p-4.5 shadow-xl transition-all flex flex-col justify-between group">
+              <div>
+                <!-- Top Badges -->
+                <div class="flex items-center justify-between gap-2 mb-3">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    ${getCategoryBadge(item.category)}
+                    <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-950 text-slate-300 border border-slate-800 flex items-center gap-1">
+                      <svg class="w-3 h-3 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
+                      ${item.location}
+                    </span>
+                  </div>
+                  <button 
+                    onclick="copyLineId('${item.serialId}')" 
+                    title="Click to copy Serial ID" 
+                    class="text-[10px] font-mono text-slate-500 hover:text-indigo-300 px-1.5 py-0.5 rounded hover:bg-slate-800 transition-colors">
+                    ${item.serialId}
+                  </button>
+                </div>
+
+                <!-- Brand & Item Name -->
+                <div class="space-y-1">
+                  <div class="text-[11px] font-mono uppercase tracking-wider text-indigo-400 font-semibold">${item.brand}</div>
+                  <h3 class="text-sm font-bold text-slate-100 font-sans leading-snug group-hover:text-indigo-200 transition-colors">
+                    ${item.name}
+                  </h3>
+                </div>
+
+                <!-- Technical Specs Box -->
+                <div class="mt-3 p-2.5 rounded-lg bg-slate-950/70 border border-slate-800/80 text-[11px] font-mono text-slate-400 leading-relaxed line-clamp-2">
+                  ${item.specs || 'Robotics laboratory asset'}
+                </div>
+              </div>
+
+              <!-- Bottom Stock & Action Section -->
+              <div class="mt-4 pt-3.5 border-t border-slate-800/80 space-y-3">
+                <div class="flex items-center justify-between text-xs">
+                  <div>${getStockPill(item)}</div>
+                  <div class="text-[10px] font-mono text-slate-400">
+                    ${borrowed > 0 ? `<span class="text-cyan-400">${borrowed} on loan</span>` : '<span class="text-slate-500">All available</span>'}
+                  </div>
+                </div>
+
+                <!-- Buttons Row -->
+                <div class="flex items-center gap-2">
+                  <button 
+                    onclick="borrowItemDirect('${item.itemId}')" 
+                    ${!canBorrow ? 'disabled' : ''}
+                    class="flex-1 py-2 px-3 rounded-lg text-xs font-semibold font-sans transition-all flex items-center justify-center gap-1.5 shadow-sm ${canBorrow ? 'bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer' : 'bg-slate-800/80 text-slate-500 cursor-not-allowed'}">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                    <span>${canBorrow ? 'Borrow Item' : 'Out of Stock'}</span>
+                  </button>
+
+                  <!-- Admin Quick Stock Controls (+ / -) -->
+                  ${isAdmin ? `
+                    <div class="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded-lg p-1 shrink-0">
+                      <button 
+                        onclick="adjustItemStock('${item.itemId}', -1)" 
+                        title="Admin: -1 Available" 
+                        class="w-6 h-6 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-rose-300 font-mono text-xs font-bold transition-colors">
+                        -
+                      </button>
+                      <button 
+                        onclick="adjustItemStock('${item.itemId}', 1)" 
+                        title="Admin: +1 Available" 
+                        class="w-6 h-6 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-emerald-300 font-mono text-xs font-bold transition-colors">
+                        +
+                      </button>
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // 2. Render Table
+      if (tableTbody) {
+        tableTbody.innerHTML = items.map(item => {
+          const avail = Number(item.availableQty);
+          const canBorrow = avail > 0;
+
+          return `
+            <tr class="hover:bg-slate-800/40 transition-colors">
+              <td class="p-3">
+                <button 
+                  onclick="copyLineId('${item.serialId}')" 
+                  title="Click to copy Serial ID" 
+                  class="font-bold text-indigo-400 font-mono hover:underline text-left block">
+                  ${item.serialId}
+                </button>
+                <div class="text-[10px] text-slate-500 font-mono">${item.itemId}</div>
+              </td>
+              <td class="p-3 max-w-sm">
+                <div class="font-bold text-slate-100 font-sans text-xs">${item.name}</div>
+                <div class="text-[10px] text-slate-400 font-mono truncate mt-0.5">${item.specs}</div>
+              </td>
+              <td class="p-3 font-mono text-slate-300">${item.brand}</td>
+              <td class="p-3">${getCategoryBadge(item.category)}</td>
+              <td class="p-3">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-950 text-slate-300 border border-slate-800">${item.location}</span>
+              </td>
+              <td class="p-3">${getStockPill(item)}</td>
+              <td class="p-3 font-mono text-xs">
+                ${avail > 2 ? '<span class="text-emerald-400 font-semibold">In Stock</span>' : avail > 0 ? '<span class="text-amber-400 font-semibold">Low Stock</span>' : '<span class="text-rose-400 font-semibold">Out of Stock</span>'}
+              </td>
+              <td class="p-3 text-right">
+                <div class="flex items-center justify-end gap-1.5">
+                  <button 
+                    onclick="borrowItemDirect('${item.itemId}')" 
+                    ${!canBorrow ? 'disabled' : ''}
+                    class="px-3 py-1 rounded text-xs font-semibold font-sans transition-colors ${canBorrow ? 'bg-indigo-600 hover:bg-indigo-500 text-white' : 'bg-slate-800 text-slate-500 cursor-not-allowed'}">
+                    Borrow
+                  </button>
+                  ${isAdmin ? `
+                    <button 
+                      onclick="adjustItemStock('${item.itemId}', -1)" 
+                      title="Admin: -1 Available" 
+                      class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-rose-300 font-mono text-xs font-bold transition-colors">
+                      -
+                    </button>
+                    <button 
+                      onclick="adjustItemStock('${item.itemId}', 1)" 
+                      title="Admin: +1 Available" 
+                      class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-emerald-300 font-mono text-xs font-bold transition-colors">
+                      +
+                    </button>
+                  ` : ''}
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+    }
+
+    // Clear Search Bar and optionally reset all filters
+    function clearInventorySearch(resetAll = false) {
+      const searchInput = document.getElementById('inv-search-input');
+      if (searchInput) searchInput.value = '';
+
+      if (resetAll) {
+        const catFilter = document.getElementById('inv-filter-category');
+        const statusFilter = document.getElementById('inv-filter-status');
+        const locFilter = document.getElementById('inv-filter-location');
+        if (catFilter) catFilter.value = 'ALL';
+        if (statusFilter) statusFilter.value = 'ALL';
+        if (locFilter) locFilter.value = 'ALL';
+      }
+
+      handleInventoryFilterChange();
+    }
+
+    // Toggle Grid vs Table View
+    function setInventoryViewMode(mode) {
+      inventoryViewMode = mode;
+      const btnGrid = document.getElementById('btn-view-grid');
+      const btnTable = document.getElementById('btn-view-table');
+
+      if (btnGrid && btnTable) {
+        if (mode === 'GRID') {
+          btnGrid.className = 'p-1.5 rounded bg-slate-800 text-white transition-colors';
+          btnTable.className = 'p-1.5 rounded text-slate-400 hover:text-slate-200 transition-colors';
+        } else {
+          btnTable.className = 'p-1.5 rounded bg-slate-800 text-white transition-colors';
+          btnGrid.className = 'p-1.5 rounded text-slate-400 hover:text-slate-200 transition-colors';
+        }
+      }
+
+      handleInventoryFilterChange();
+    }
+
+    // Admin Equipment Registration Modal Handlers
+    function openAddItemModal() {
+      if (!currentUser || currentUser.role !== 'ADMIN') {
+        showToast('Admin credentials required to register equipment.', 'error');
+        return;
+      }
+      const modal = document.getElementById('add-item-modal');
+      if (modal) modal.classList.add('open');
+    }
+
+    function closeAddItemModal() {
+      const modal = document.getElementById('add-item-modal');
+      if (modal) modal.classList.remove('open');
+    }
+
+    function handleAddItemSubmit(event) {
+      event.preventDefault();
+      if (!currentUser || currentUser.role !== 'ADMIN') {
+        showToast('Admin privileges required to register equipment.', 'error');
+        return;
+      }
+
+      const name = document.getElementById('add-item-name').value.trim();
+      const serial = document.getElementById('add-item-serial').value.trim();
+      const brand = document.getElementById('add-item-brand').value.trim();
+      const category = document.getElementById('add-item-category').value;
+      const location = document.getElementById('add-item-location').value;
+      const totalQty = parseInt(document.getElementById('add-item-total-qty').value, 10);
+      const availQty = parseInt(document.getElementById('add-item-avail-qty').value, 10);
+      const specs = document.getElementById('add-item-specs').value.trim();
+
+      if (!name || !serial || !brand) {
+        showToast('Please complete Name, Serial ID, and Brand fields.', 'error');
+        return;
+      }
+
+      if (availQty > totalQty) {
+        showToast('Available quantity cannot exceed total quantity.', 'error');
+        return;
+      }
+
+      // Ensure Serial ID uniqueness
+      if (appInventory.some(it => it.serialId.toLowerCase() === serial.toLowerCase())) {
+        showToast(`Serial ID "${serial}" is already registered in inventory.`, 'error');
+        return;
+      }
+
+      const prefix = category.substring(0, 3).toUpperCase();
+      const randomNum = Math.floor(100 + Math.random() * 900);
+      const newItemId = `${prefix}-${brand.replace(/\s+/g, '').substring(0, 4).toUpperCase()}-${randomNum}`;
+
+      const newItem = {
+        itemId: newItemId,
+        name: name,
+        serialId: serial,
+        brand: brand,
+        category: category,
+        location: location,
+        totalQty: totalQty,
+        availableQty: availQty,
+        borrowCount: 0,
+        specs: specs || 'Laboratory hardware asset'
+      };
+
+      appInventory.unshift(newItem);
+      saveInventory();
+      closeAddItemModal();
+      document.getElementById('add-item-form').reset();
+      showToast(`Successfully registered "${name}" (${serial}) into catalog!`, 'success');
+      handleInventoryFilterChange();
+    }
+
+    // Admin Stock Adjustment (+ / -)
+    function adjustItemStock(itemId, delta) {
+      if (!currentUser || currentUser.role !== 'ADMIN') {
+        showToast('Admin privileges required to adjust stock.', 'error');
+        return;
+      }
+
+      const item = appInventory.find(it => it.itemId === itemId);
+      if (!item) return;
+
+      const newAvail = Number(item.availableQty) + delta;
+      if (newAvail < 0) {
+        showToast(`Available stock cannot be less than 0.`, 'error');
+        return;
+      }
+      if (newAvail > Number(item.totalQty)) {
+        showToast(`Available stock cannot exceed total quantity (${item.totalQty}).`, 'error');
+        return;
+      }
+
+      item.availableQty = newAvail;
+      saveInventory();
+      showToast(`Stock updated for ${item.name}: ${item.availableQty}/${item.totalQty} available`, 'success');
+      handleInventoryFilterChange();
+    }
+
+    // Direct Borrow Action from Catalog
+    function borrowItemDirect(itemId) {
+      const item = appInventory.find(it => it.itemId === itemId);
+      if (!item) return;
+
+      if (Number(item.availableQty) <= 0) {
+        showToast(`"${item.name}" is currently out of stock.`, 'error');
+        return;
+      }
+
+      showToast(`Selected "${item.name}" (${item.serialId}) for checkout!`, 'success');
+      switchTab('borrow');
+
+      const borrowUser = document.getElementById('borrow-desk-user');
+      if (borrowUser && currentUser) {
+        borrowUser.innerHTML = `<strong>${currentUser.fullName} (${currentUser.role === 'ADMIN' ? 'ADMIN' : currentUser.userId})</strong><br/><span class="text-emerald-400 font-mono text-xs">READY FOR CHECKOUT: ${item.name} [${item.serialId}]</span>`;
+      }
+    }
+
+    // Admin Factory Reset for Inventory
+    function resetFactoryInventory() {
+      if (confirm('Restore inventory catalog to factory seed data (33 items)? Custom items will be reset.')) {
+        appInventory = [...DEFAULT_ITEMS];
+        saveInventory();
+        handleInventoryFilterChange();
+        showToast('Inventory catalog restored to factory 33 seed items.', 'success');
+      }
+    }
+
     // 15. Setup on DOM Ready
     window.addEventListener('DOMContentLoaded', () => {
       initUsers();
       initSession();
+      initInventory();
       applyRolePermissions();
       renderAuthHeader();
       renderStudentDirectory();
