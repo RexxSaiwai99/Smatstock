@@ -1236,35 +1236,223 @@
         <!-- VIEW 4: ADMIN PANEL TAB VIEW (RESTRICTED TO ADMIN ONLY)               -->
         <!-- ===================================================================== -->
         <section id="view-admin" class="tab-view space-y-6">
+          
+          <!-- Top Header & Admin Actions -->
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
             <div>
               <div class="flex items-center gap-2">
                 <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-100 font-tech">
                   ADMINISTRATIVE CONTROL PANEL
                 </h1>
-                <span class="font-mono text-xs text-rose-400 bg-rose-950/80 px-2 py-0.5 rounded border border-rose-800/60">
-                  STAFF PRIVILEGES
+                <span class="font-mono text-xs text-rose-400 bg-rose-950/80 px-2 py-0.5 rounded border border-rose-800/60 flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping"></span>
+                  M5 STAFF COMMAND
                 </span>
               </div>
               <p class="text-xs text-slate-400 mt-1 font-mono">
-                Student directory registry, account management, Line contact copy, and factory database reset.
+                Student checkout authorizations, real-time overdue detection, automated Line warning notifications, and catalog management.
               </p>
             </div>
-            <div class="flex items-center gap-2">
-              <button onclick="openAuthModal('signup')" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5">
+            
+            <div class="flex items-center gap-2 flex-wrap">
+              <button 
+                onclick="openAddItemModal()" 
+                class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold font-sans transition-all flex items-center gap-1.5 shadow-sm">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                <span>+ Add Equipment</span>
+              </button>
+              <button 
+                onclick="openAuthModal('signup')" 
+                class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold font-sans transition-all flex items-center gap-1.5 shadow-sm">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
                 <span>+ Register Student</span>
+              </button>
+              <button 
+                onclick="scanOverdueLoansManual()" 
+                title="Scan all active loans against current date"
+                class="px-3 py-1.5 bg-slate-900 border border-slate-700 hover:border-slate-500 text-slate-300 rounded-lg text-xs font-mono transition-all flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                <span>Scan Overdue</span>
               </button>
             </div>
           </div>
 
-          <!-- Master Student Directory Table (Real-time synced with localStorage) -->
+          <!-- Quick Admin Telemetry Stats Row -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+            <!-- Pending Approvals Stat -->
+            <div class="p-3.5 rounded-xl border border-slate-800 bg-slate-900/90 shadow-md">
+              <div class="flex items-center justify-between text-[11px] font-mono text-slate-400 mb-1">
+                <span>PENDING APPROVALS</span>
+                <span id="admin-kpi-pending-badge" class="px-1.5 py-0.2 rounded bg-amber-950 text-amber-400 border border-amber-800 text-[10px]">REVIEW</span>
+              </div>
+              <div id="admin-stat-pending" class="text-2xl font-bold font-mono text-amber-400">0</div>
+              <div class="text-[10px] text-slate-500 font-mono mt-0.5">Requests awaiting decision</div>
+            </div>
+
+            <!-- Overdue Assets Stat -->
+            <div class="p-3.5 rounded-xl border border-slate-800 bg-slate-900/90 shadow-md">
+              <div class="flex items-center justify-between text-[11px] font-mono text-slate-400 mb-1">
+                <span>OVERDUE ITEMS</span>
+                <span id="admin-kpi-overdue-badge" class="px-1.5 py-0.2 rounded bg-rose-950 text-rose-400 border border-rose-800 text-[10px] animate-pulse">RECALL</span>
+              </div>
+              <div id="admin-stat-overdue" class="text-2xl font-bold font-mono text-rose-400">0</div>
+              <div class="text-[10px] text-slate-500 font-mono mt-0.5">Past return schedule</div>
+            </div>
+
+            <!-- Enrolled Students Stat -->
+            <div class="p-3.5 rounded-xl border border-slate-800 bg-slate-900/90 shadow-md">
+              <div class="flex items-center justify-between text-[11px] font-mono text-slate-400 mb-1">
+                <span>REGISTERED STUDENTS</span>
+                <span class="px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 text-[10px]">VERIFIED</span>
+              </div>
+              <div id="admin-stat-students" class="text-2xl font-bold font-mono text-emerald-400">4</div>
+              <div class="text-[10px] text-slate-500 font-mono mt-0.5">Enrolled student profiles</div>
+            </div>
+
+            <!-- Catalog Items Stat -->
+            <div class="p-3.5 rounded-xl border border-slate-800 bg-slate-900/90 shadow-md">
+              <div class="flex items-center justify-between text-[11px] font-mono text-slate-400 mb-1">
+                <span>LABORATORY SKUS</span>
+                <span class="px-1.5 py-0.2 rounded bg-indigo-950 text-indigo-400 border border-indigo-800 text-[10px]">CATALOG</span>
+              </div>
+              <div id="admin-stat-catalog" class="text-2xl font-bold font-mono text-indigo-400">33</div>
+              <div class="text-[10px] text-slate-500 font-mono mt-0.5">Enrolled equipment assets</div>
+            </div>
+          </div>
+
+          <!-- =================================================================== -->
+          <!-- 1. PENDING APPROVAL REQUESTS TABLE (M5 REQUIREMENT)                 -->
+          <!-- =================================================================== -->
+          <div class="rounded-xl border border-slate-800 bg-slate-900/90 shadow-xl overflow-hidden">
+            <div class="p-4 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-950/60">
+              <div class="flex items-center gap-2.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span>
+                <div>
+                  <h2 class="text-sm font-bold text-slate-100 uppercase tracking-wide font-tech flex items-center gap-2">
+                    <span>Pending Borrow Approval Requests</span>
+                    <span id="admin-pending-count" class="text-xs font-mono text-amber-400 bg-amber-950/90 px-2 py-0.5 rounded border border-amber-800/80">
+                      0 Pending
+                    </span>
+                  </h2>
+                  <p class="text-xs text-slate-400 font-mono">
+                    Review and authorize or reject student hardware loan applications before physical handover.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Quick action for multiple approvals -->
+              <div id="admin-pending-bulk-actions" class="hidden flex items-center gap-2">
+                <button 
+                  onclick="handleApproveAllPendingLoans()" 
+                  class="px-3 py-1.5 bg-emerald-600/90 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold font-sans transition-colors flex items-center gap-1.5 shadow-sm">
+                  <span>✓ Approve All Pending</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Pending Table Container -->
+            <div id="admin-pending-table-container" class="overflow-x-auto">
+              <table class="w-full text-left text-xs font-mono">
+                <thead>
+                  <tr class="border-b border-slate-800 text-slate-400 bg-slate-950/70 text-[11px]">
+                    <th class="p-3 font-normal">REQ ID & DATE</th>
+                    <th class="p-3 font-normal">STUDENT BORROWER</th>
+                    <th class="p-3 font-normal">REQUESTED ASSET</th>
+                    <th class="p-3 font-normal">QUANTITY & DUE DATE</th>
+                    <th class="p-3 font-normal">RESEARCH PURPOSE / USAGE NOTE</th>
+                    <th class="p-3 font-normal">STATUS</th>
+                    <th class="p-3 font-normal text-right">DECISION ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-pending-table-tbody" class="divide-y divide-slate-800/80">
+                  <!-- Populated dynamically by renderAdminPendingApprovals -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Empty State for Pending Requests -->
+            <div id="admin-pending-empty-state" class="hidden p-8 text-center space-y-2 font-mono text-xs">
+              <div class="w-10 h-10 rounded-full bg-slate-800/80 text-emerald-400 flex items-center justify-center mx-auto text-base">
+                ✓
+              </div>
+              <div class="text-slate-200 font-bold">No Pending Approval Requests</div>
+              <p class="text-slate-500 text-[11px] max-w-sm mx-auto">
+                All student borrow applications have been reviewed. New submissions from students will automatically appear here.
+              </p>
+            </div>
+          </div>
+
+          <!-- =================================================================== -->
+          <!-- 2. OVERDUE AUTO-DETECTION & LINE WARNING DISPATCH (M5 REQUIREMENT)  -->
+          <!-- =================================================================== -->
+          <div class="rounded-xl border border-slate-800 bg-slate-900/90 shadow-xl overflow-hidden">
+            
+            <!-- Header & Alert Banner -->
+            <div class="p-4 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-950/60">
+              <div class="flex items-center gap-2.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping"></span>
+                <div>
+                  <h2 class="text-sm font-bold text-slate-100 uppercase tracking-wide font-tech flex items-center gap-2">
+                    <span>Overdue Auto-Detection & Line Recall Center</span>
+                    <span id="admin-overdue-count" class="text-xs font-mono text-rose-400 bg-rose-950/90 px-2 py-0.5 rounded border border-rose-800/80">
+                      0 Overdue
+                    </span>
+                  </h2>
+                  <p class="text-xs text-slate-400 font-mono">
+                    Real-time comparison of expected return date against current system date. Dispatches template recall messages to Line.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Overdue Alert Indicator Banner -->
+              <div id="admin-overdue-alert-banner" class="hidden text-xs font-mono px-3 py-1.5 rounded-lg bg-rose-950/70 border border-rose-700/80 text-rose-300 flex items-center gap-2">
+                <svg class="w-4 h-4 text-rose-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                <span>Immediate student contact recommended via Line messenger.</span>
+              </div>
+            </div>
+
+            <!-- Overdue Table Container -->
+            <div id="admin-overdue-table-container" class="overflow-x-auto">
+              <table class="w-full text-left text-xs font-mono">
+                <thead>
+                  <tr class="border-b border-slate-800 text-slate-400 bg-slate-950/70 text-[11px]">
+                    <th class="p-3 font-normal">LOAN ID</th>
+                    <th class="p-3 font-normal">EQUIPMENT & SERIAL</th>
+                    <th class="p-3 font-normal">STUDENT BORROWER</th>
+                    <th class="p-3 font-normal">LINE ID (RECALL CHANNEL)</th>
+                    <th class="p-3 font-normal">DATES & OVERDUE DURATION</th>
+                    <th class="p-3 font-normal">PURPOSE</th>
+                    <th class="p-3 font-normal text-right">DISPATCH ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-overdue-table-tbody" class="divide-y divide-slate-800/80">
+                  <!-- Populated dynamically by renderAdminOverdueMonitor -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Empty State for Overdue Monitor -->
+            <div id="admin-overdue-empty-state" class="hidden p-8 text-center space-y-2 font-mono text-xs">
+              <div class="w-10 h-10 rounded-full bg-slate-800/80 text-emerald-400 flex items-center justify-center mx-auto text-base">
+                🛡️
+              </div>
+              <div class="text-slate-200 font-bold">All Active Loans On Schedule</div>
+              <p class="text-slate-500 text-[11px] max-w-sm mx-auto">
+                No active borrowings have passed their expected return date. The auto-detection scanner runs continuously.
+              </p>
+            </div>
+          </div>
+
+          <!-- =================================================================== -->
+          <!-- 3. MASTER STUDENT DIRECTORY TABLE                                   -->
+          <!-- =================================================================== -->
           <div class="rounded-xl border border-slate-800 bg-slate-900/90 shadow-xl overflow-hidden">
             <div class="p-4 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h2 class="text-sm font-bold text-slate-100 uppercase tracking-wide font-tech">
                   Enrolled Students Directory & Line Contact Registry
                 </h2>
-                <p class="text-xs text-slate-400">
+                <p class="text-xs text-slate-400 font-mono">
                   Real-time list of all students registered in the RAI lab borrowing database.
                 </p>
               </div>
@@ -1293,13 +1481,23 @@
             </div>
           </div>
 
-          <!-- Admin Quick Tools & System Reset -->
+          <!-- =================================================================== -->
+          <!-- 4. SYSTEM OPERATIONS & TEST CONTROLS                                -->
+          <!-- =================================================================== -->
           <div class="rounded-xl border border-slate-800 bg-slate-900/90 p-5 shadow-lg space-y-4">
             <h2 class="text-sm font-bold text-slate-100 uppercase tracking-wide border-b border-slate-800 pb-3 font-tech">
               System Operations & Test Controls
             </h2>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <button onclick="openAddItemModal()" class="p-3.5 rounded-lg bg-slate-950 border border-slate-800 hover:border-indigo-500/60 text-left transition-colors flex items-center justify-between">
+                <div>
+                  <div class="font-semibold text-slate-200 text-xs">Add Equipment to Catalog</div>
+                  <div class="text-[10px] text-slate-400 font-mono mt-0.5">Enrolls new hardware asset</div>
+                </div>
+                <span class="text-indigo-400 font-bold font-mono text-sm">+</span>
+              </button>
+
               <button onclick="openAuthModal('signup')" class="p-3.5 rounded-lg bg-slate-950 border border-slate-800 hover:border-emerald-500/60 text-left transition-colors flex items-center justify-between">
                 <div>
                   <div class="font-semibold text-slate-200 text-xs">Register New Student</div>
@@ -1322,14 +1520,6 @@
                   <div class="text-[10px] text-indigo-400 font-mono mt-0.5">Restores 33 factory seed items</div>
                 </div>
                 <span class="text-indigo-400 font-mono text-xs">RESTORE</span>
-              </button>
-
-              <button onclick="resetFactoryUsers()" class="p-3.5 rounded-lg bg-rose-950/20 border border-rose-900/40 hover:border-rose-700/60 text-left transition-colors flex items-center justify-between">
-                <div>
-                  <div class="font-semibold text-rose-200 text-xs">Reset User Database</div>
-                  <div class="text-[10px] text-rose-400 font-mono mt-0.5">Restores factory default accounts</div>
-                </div>
-                <span class="text-rose-400 font-mono text-xs">RESET</span>
               </button>
             </div>
           </div>
@@ -1564,17 +1754,18 @@
     </div>
   </div>
 
-  <!-- Add Item Modal (Admin Feature) -->
+  <!-- Add/Edit Item Modal (Admin Feature) -->
   <div id="add-item-modal" class="modal-backdrop">
     <div class="w-full max-w-lg rounded-2xl border border-slate-800 bg-[#0c1222] shadow-2xl overflow-hidden backdrop-blur-md">
       <div class="flex items-center justify-between border-b border-slate-800 bg-slate-950/70 px-6 py-4">
         <div>
-          <h3 class="text-sm font-bold text-slate-100 font-tech">Register New Equipment to Catalog</h3>
-          <p class="text-[11px] font-mono text-indigo-400">Inventory Database Enrollment</p>
+          <h3 id="add-item-modal-title" class="text-sm font-bold text-slate-100 font-tech">Register New Equipment to Catalog</h3>
+          <p id="add-item-modal-subtitle" class="text-[11px] font-mono text-indigo-400">Inventory Database Enrollment</p>
         </div>
         <button onclick="closeAddItemModal()" class="text-slate-400 hover:text-white font-mono text-sm">✕</button>
       </div>
       <form id="add-item-form" onsubmit="handleAddItemSubmit(event)" class="p-6 space-y-3 font-mono text-xs">
+        <input type="hidden" id="add-item-id" value="" />
         <div>
           <label class="block text-slate-300 font-bold mb-1">ITEM NAME *</label>
           <input type="text" id="add-item-name" required placeholder="e.g. ACER Nitro 5 Gaming Laptop" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3.5 py-2 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
@@ -1626,10 +1817,11 @@
         </div>
         <div class="pt-2 flex items-center justify-end gap-2 font-sans">
           <button type="button" onclick="closeAddItemModal()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded text-xs font-semibold">Cancel</button>
-          <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-xs font-semibold">Save Equipment</button>
+          <button id="add-item-submit-btn" type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-xs font-semibold">Save Equipment</button>
         </div>
       </form>
     </div>
+  </div>
   <!-- Return Item Modal (Condition Check & Inspection Workflow) -->
   <div id="return-item-modal" class="modal-backdrop">
     <div class="w-full max-w-lg rounded-2xl border border-slate-800 bg-[#0c1222] shadow-2xl overflow-hidden backdrop-blur-md">
@@ -2367,6 +2559,44 @@
         status: 'RETURNED',
         daysOverdue: 0,
         purpose: 'Sensor Harness Assembly'
+      },
+      {
+        loanId: 'REQ-2026-011',
+        studentId: '68010115',
+        studentName: 'Kenji Tanaka',
+        batch: 68,
+        major: 'Computer Engineering',
+        lineId: '@kenji_cpe68',
+        itemId: 'MCU-STM-01',
+        itemName: 'STMicroelectronics STM32F407G Discovery Board',
+        serialId: 'SN-STM-4071',
+        category: 'Microcontroller',
+        location: 'HA1',
+        borrowDate: '2026-10-04',
+        dueDate: '2026-10-11',
+        status: 'PENDING',
+        daysOverdue: 0,
+        qty: 1,
+        purpose: 'Real-time FreeRTOS Motor Driver UART Protocol'
+      },
+      {
+        loanId: 'REQ-2026-012',
+        studentId: '69010033',
+        studentName: 'Tawan Srisuk',
+        batch: 69,
+        major: 'Electrical Engineering',
+        lineId: '@tawan_ee69',
+        itemId: 'SENS-LID-01',
+        itemName: 'RPLiDAR A1M8 360 Laser Range Scanner',
+        serialId: 'SN-RPL-1001',
+        category: 'Sensor',
+        location: 'RCL',
+        borrowDate: '2026-10-04',
+        dueDate: '2026-10-11',
+        status: 'PENDING',
+        daysOverdue: 0,
+        qty: 1,
+        purpose: 'Mobile Robot Obstacle Avoidance 2D Mapping'
       }
     ];
 
@@ -2513,6 +2743,15 @@
         const stored = localStorage.getItem(STORAGE_KEY_LOANS);
         if (stored) {
           appLoans = JSON.parse(stored);
+          // If stored records lack pending requests, append pre-seeded pending requests for M5 testing
+          const hasPending = appLoans.some(l => l.status === 'PENDING');
+          if (!hasPending) {
+            const pendingSeed = DEFAULT_LOANS.filter(l => l.status === 'PENDING');
+            if (pendingSeed.length > 0) {
+              appLoans.unshift(...pendingSeed);
+              localStorage.setItem(STORAGE_KEY_LOANS, JSON.stringify(appLoans));
+            }
+          }
         } else {
           appLoans = [...DEFAULT_LOANS];
           localStorage.setItem(STORAGE_KEY_LOANS, JSON.stringify(appLoans));
@@ -2526,6 +2765,9 @@
       localStorage.setItem(STORAGE_KEY_LOANS, JSON.stringify(appLoans));
       if (typeof renderDashboardAnalytics === 'function') {
         renderDashboardAnalytics();
+      }
+      if (typeof renderAdminControlPanel === 'function') {
+        renderAdminControlPanel();
       }
     }
 
@@ -2675,6 +2917,10 @@
       if (typeof updateBorrowDeskOnAuthChange === 'function') {
         updateBorrowDeskOnAuthChange();
       }
+
+      if (isAdmin && typeof renderAdminControlPanel === 'function') {
+        renderAdminControlPanel();
+      }
     }
 
     // 6. Render Auth Header State Pill & Buttons
@@ -2799,9 +3045,10 @@
         tabId = 'dashboard';
       }
 
-      // Restrict Admin view if logged in as student
-      if (tabId === 'admin' && currentUser && currentUser.role !== 'ADMIN') {
+      // Restrict Admin view if not logged in as admin
+      if (tabId === 'admin' && (!currentUser || currentUser.role !== 'ADMIN')) {
         showToast('Admin tab is restricted to lab staff credentials.', 'error');
+        openAuthModal('login');
         return;
       }
 
@@ -2853,6 +3100,10 @@
 
       if (tabId === 'borrow' && typeof initBorrowDesk === 'function') {
         initBorrowDesk();
+      }
+
+      if (tabId === 'admin' && typeof renderAdminControlPanel === 'function') {
+        renderAdminControlPanel();
       }
     }
 
@@ -3307,8 +3558,15 @@
                     <span>${canBorrow ? 'Borrow Item' : 'Out of Stock'}</span>
                   </button>
 
-                  <!-- Admin Quick Stock Controls (+ / -) -->
+                  <!-- Admin Quick Stock Controls (+ / -) & Edit -->
                   ${isAdmin ? `
+                    <button 
+                      onclick="openAddItemModal('${item.itemId}')" 
+                      title="Admin: Edit Equipment Parameters" 
+                      class="py-2 px-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-300 font-mono text-xs font-semibold transition-colors flex items-center gap-1 shadow-sm">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                      <span>Edit</span>
+                    </button>
                     <div class="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded-lg p-1 shrink-0">
                       <button 
                         onclick="adjustItemStock('${item.itemId}', -1)" 
@@ -3371,6 +3629,12 @@
                   </button>
                   ${isAdmin ? `
                     <button 
+                      onclick="openAddItemModal('${item.itemId}')" 
+                      title="Edit Item Parameters" 
+                      class="px-2.5 py-1 rounded text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-cyan-300 font-mono transition-colors">
+                      Edit
+                    </button>
+                    <button 
                       onclick="adjustItemStock('${item.itemId}', -1)" 
                       title="Admin: -1 Available" 
                       class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-rose-300 font-mono text-xs font-bold transition-colors">
@@ -3427,27 +3691,85 @@
       handleInventoryFilterChange();
     }
 
-    // Admin Equipment Registration Modal Handlers
-    function openAddItemModal() {
+    // Admin Equipment Registration & Editing Modal Handlers
+    function openAddItemModal(itemId = null) {
       if (!currentUser || currentUser.role !== 'ADMIN') {
-        showToast('Admin credentials required to register equipment.', 'error');
+        showToast('Admin credentials required to manage laboratory assets.', 'error');
+        openAuthModal('login');
         return;
       }
+
       const modal = document.getElementById('add-item-modal');
+      const idInput = document.getElementById('add-item-id');
+      const titleEl = document.getElementById('add-item-modal-title');
+      const subtitleEl = document.getElementById('add-item-modal-subtitle');
+      const submitBtn = document.getElementById('add-item-submit-btn');
+
+      const nameInput = document.getElementById('add-item-name');
+      const serialInput = document.getElementById('add-item-serial');
+      const brandInput = document.getElementById('add-item-brand');
+      const catSelect = document.getElementById('add-item-category');
+      const locSelect = document.getElementById('add-item-location');
+      const totalInput = document.getElementById('add-item-total-qty');
+      const availInput = document.getElementById('add-item-avail-qty');
+      const specsInput = document.getElementById('add-item-specs');
+
+      if (itemId) {
+        // EDIT MODE: Populate existing item parameters
+        const item = appInventory.find(it => it.itemId === itemId);
+        if (!item) {
+          showToast('Equipment asset not found.', 'error');
+          return;
+        }
+
+        if (idInput) idInput.value = item.itemId;
+        if (titleEl) titleEl.innerText = `Edit Equipment: ${item.name}`;
+        if (subtitleEl) subtitleEl.innerText = `Modify parameters for ${item.serialId} (${item.itemId})`;
+        if (submitBtn) submitBtn.innerText = 'Save Changes';
+
+        if (nameInput) nameInput.value = item.name;
+        if (serialInput) serialInput.value = item.serialId;
+        if (brandInput) brandInput.value = item.brand;
+        if (catSelect) catSelect.value = item.category;
+        if (locSelect) locSelect.value = item.location;
+        if (totalInput) totalInput.value = item.totalQty;
+        if (availInput) availInput.value = item.availableQty;
+        if (specsInput) specsInput.value = item.specs || '';
+      } else {
+        // ADD MODE: Reset form for fresh item enrollment
+        if (idInput) idInput.value = '';
+        if (titleEl) titleEl.innerText = 'Register New Equipment to Catalog';
+        if (subtitleEl) subtitleEl.innerText = 'Inventory Database Enrollment';
+        if (submitBtn) submitBtn.innerText = 'Save Equipment';
+
+        const form = document.getElementById('add-item-form');
+        if (form) form.reset();
+        if (totalInput) totalInput.value = 5;
+        if (availInput) availInput.value = 5;
+      }
+
       if (modal) modal.classList.add('open');
     }
 
     function closeAddItemModal() {
       const modal = document.getElementById('add-item-modal');
       if (modal) modal.classList.remove('open');
+      const form = document.getElementById('add-item-form');
+      if (form) form.reset();
+      const idInput = document.getElementById('add-item-id');
+      if (idInput) idInput.value = '';
     }
 
     function handleAddItemSubmit(event) {
       event.preventDefault();
       if (!currentUser || currentUser.role !== 'ADMIN') {
-        showToast('Admin privileges required to register equipment.', 'error');
+        showToast('Admin privileges required to manage equipment.', 'error');
         return;
       }
+
+      const idInput = document.getElementById('add-item-id');
+      const isEditing = idInput && Boolean(idInput.value);
+      const editingId = idInput ? idInput.value : '';
 
       const name = document.getElementById('add-item-name').value.trim();
       const serial = document.getElementById('add-item-serial').value.trim();
@@ -3468,35 +3790,89 @@
         return;
       }
 
-      // Ensure Serial ID uniqueness
-      if (appInventory.some(it => it.serialId.toLowerCase() === serial.toLowerCase())) {
-        showToast(`Serial ID "${serial}" is already registered in inventory.`, 'error');
-        return;
+      if (isEditing) {
+        // Update Existing Item
+        const item = appInventory.find(it => it.itemId === editingId);
+        if (!item) {
+          showToast('Equipment to edit could not be found.', 'error');
+          return;
+        }
+
+        // Check serial ID uniqueness excluding current item
+        const duplicateSerial = appInventory.some(it => it.itemId !== editingId && it.serialId.toLowerCase() === serial.toLowerCase());
+        if (duplicateSerial) {
+          showToast(`Serial ID "${serial}" is already registered to another item.`, 'error');
+          return;
+        }
+
+        item.name = name;
+        item.serialId = serial;
+        item.brand = brand;
+        item.category = category;
+        item.location = location;
+        item.totalQty = totalQty;
+        item.availableQty = availQty;
+        item.specs = specs || 'Laboratory hardware asset';
+
+        addActivity(
+          'STOCK',
+          'Equipment Updated',
+          `Admin Dr. Thanapat updated ${item.name} (${item.serialId}). Total: ${totalQty}, Available: ${availQty}.`,
+          'indigo'
+        );
+
+        saveInventory();
+        closeAddItemModal();
+        showToast(`Successfully updated "${name}" (${serial})!`, 'success');
+
+      } else {
+        // Register New Item
+        if (appInventory.some(it => it.serialId.toLowerCase() === serial.toLowerCase())) {
+          showToast(`Serial ID "${serial}" is already registered in inventory.`, 'error');
+          return;
+        }
+
+        const prefix = category.substring(0, 3).toUpperCase();
+        const randomNum = Math.floor(100 + Math.random() * 900);
+        const newItemId = `${prefix}-${brand.replace(/\s+/g, '').substring(0, 4).toUpperCase()}-${randomNum}`;
+
+        const newItem = {
+          itemId: newItemId,
+          name: name,
+          serialId: serial,
+          brand: brand,
+          category: category,
+          location: location,
+          totalQty: totalQty,
+          availableQty: availQty,
+          borrowCount: 0,
+          specs: specs || 'Laboratory hardware asset'
+        };
+
+        appInventory.unshift(newItem);
+
+        addActivity(
+          'RESTOCK',
+          'New Equipment Enrolled',
+          `Admin Dr. Thanapat registered new ${category}: ${name} (${serial}) at Bay ${location}.`,
+          'emerald'
+        );
+
+        saveInventory();
+        closeAddItemModal();
+        showToast(`Successfully registered "${name}" (${serial}) into catalog!`, 'success');
       }
 
-      const prefix = category.substring(0, 3).toUpperCase();
-      const randomNum = Math.floor(100 + Math.random() * 900);
-      const newItemId = `${prefix}-${brand.replace(/\s+/g, '').substring(0, 4).toUpperCase()}-${randomNum}`;
-
-      const newItem = {
-        itemId: newItemId,
-        name: name,
-        serialId: serial,
-        brand: brand,
-        category: category,
-        location: location,
-        totalQty: totalQty,
-        availableQty: availQty,
-        borrowCount: 0,
-        specs: specs || 'Laboratory hardware asset'
-      };
-
-      appInventory.unshift(newItem);
-      saveInventory();
-      closeAddItemModal();
-      document.getElementById('add-item-form').reset();
-      showToast(`Successfully registered "${name}" (${serial}) into catalog!`, 'success');
       handleInventoryFilterChange();
+      if (typeof populateBorrowItemDropdown === 'function') {
+        populateBorrowItemDropdown();
+      }
+      if (typeof renderDashboardAnalytics === 'function') {
+        renderDashboardAnalytics();
+      }
+      if (typeof renderAdminControlPanel === 'function') {
+        renderAdminControlPanel();
+      }
     }
 
     // Admin Stock Adjustment (+ / -)
@@ -5093,9 +5469,12 @@
       item.availableQty = Math.max(0, Number(item.availableQty) - requestedQty);
       item.borrowCount = (Number(item.borrowCount) || 0) + requestedQty;
 
-      // 2. RECORD TRANSACTION with ACTIVE Status in appLoans
+      // 2. RECORD TRANSACTION (PENDING for students requiring approval, ACTIVE for Admin)
+      const isAutoApproved = currentUser.role === 'ADMIN';
+      const initialStatus = isAutoApproved ? 'ACTIVE' : 'PENDING';
+      const statusPrefix = isAutoApproved ? 'LN' : 'REQ';
       const todayStr = new Date().toISOString().split('T')[0];
-      const newLoanId = `LN-2026-${String(appLoans.length + 1).padStart(3, '0')}`;
+      const newLoanId = `${statusPrefix}-2026-${String(appLoans.length + 1).padStart(3, '0')}`;
 
       const newLoan = {
         loanId: newLoanId,
@@ -5112,7 +5491,7 @@
         borrowDate: todayStr,
         dueDate: dueDateInput.value,
         returnDate: null,
-        status: 'ACTIVE',
+        status: initialStatus,
         daysOverdue: 0,
         qty: requestedQty,
         purpose: purpose,
@@ -5124,20 +5503,28 @@
       appLoans.unshift(newLoan);
 
       // 3. RECORD Activity Feed Timeline Event
-      addActivity(
-        'LOAN',
-        'Equipment Checked Out',
-        `${borrower.fullName} (Batch ${borrower.batch}) checked out ${requestedQty}x ${item.name} (${item.serialId}). Return due: ${dueDateInput.value}.`,
-        'indigo'
-      );
+      if (isAutoApproved) {
+        addActivity(
+          'LOAN',
+          'Equipment Checked Out',
+          `Admin Dr. Thanapat dispatched ${requestedQty}x ${item.name} (${item.serialId}) to ${borrower.fullName}. Due: ${dueDateInput.value}.`,
+          'indigo'
+        );
+        showToast(`Authorized! ${requestedQty}x "${item.name}" checked out to ${borrower.fullName}. Due: ${dueDateInput.value}.`, 'success');
+      } else {
+        addActivity(
+          'LOAN',
+          'Borrow Request Submitted',
+          `${borrower.fullName} (Batch ${borrower.batch}) submitted checkout request for ${requestedQty}x ${item.name} (${item.serialId}). Awaiting Admin Approval.`,
+          'amber'
+        );
+        showToast(`Application submitted! Status: PENDING Admin Approval. Review in Admin Panel or Active Loans.`, 'success');
+      }
 
       // 4. PERSIST to LocalStorage
       saveInventory();
       saveLoans();
       saveActivities();
-
-      // 5. User Feedback & View Refresh
-      showToast(`Success! ${requestedQty}x "${item.name}" checked out to ${borrower.fullName}. Due: ${dueDateInput.value}.`, 'success');
 
       // Reset form fields
       if (purposeInput) purposeInput.value = '';
@@ -5145,6 +5532,9 @@
       populateBorrowItemDropdown(currentBorrowCategoryFilter);
       handleInventoryFilterChange();
       renderDashboardAnalytics();
+      if (typeof renderAdminControlPanel === 'function') {
+        renderAdminControlPanel();
+      }
 
       // Automatically switch to Active Loans view so user immediately sees their record!
       switchBorrowDeskTab('returns');
@@ -5169,8 +5559,8 @@
       const today = new Date();
       today.setHours(0,0,0,0);
 
-      // 1. Filter by Active / Overdue Status
-      let activeLoansList = appLoans.filter(l => l.status === 'ACTIVE' || l.status === 'OVERDUE');
+      // 1. Filter by Active / Overdue / Pending Status
+      let activeLoansList = appLoans.filter(l => l.status === 'ACTIVE' || l.status === 'OVERDUE' || l.status === 'PENDING');
 
       // 2. Role-Based Security Filter:
       // If student: ONLY show loans for this student.
@@ -5191,10 +5581,10 @@
         // Recalculate overdue status dynamically
         const due = new Date(loan.dueDate + 'T00:00:00');
         const diffDays = Math.round((today - due) / (1000 * 60 * 60 * 24));
-        const isOverdue = diffDays > 0;
+        const isOverdue = loan.status !== 'PENDING' && diffDays > 0;
 
         if (filterStatus === 'OVERDUE' && !isOverdue) return false;
-        if (filterStatus === 'ACTIVE' && isOverdue) return false;
+        if (filterStatus === 'ACTIVE' && (isOverdue || loan.status === 'PENDING')) return false;
 
         if (query) {
           const matchName = (loan.itemName || '').toLowerCase().includes(query);
@@ -5229,8 +5619,10 @@
 
       if (emptyState) emptyState.classList.add('hidden');
 
-      // Sort: Overdue items first, then nearest due date
+      // Sort: Pending first, then Overdue items, then nearest due date
       displayLoans.sort((a, b) => {
+        if (a.status === 'PENDING' && b.status !== 'PENDING') return -1;
+        if (a.status !== 'PENDING' && b.status === 'PENDING') return 1;
         const dueA = new Date(a.dueDate + 'T00:00:00');
         const dueB = new Date(b.dueDate + 'T00:00:00');
         return dueA - dueB;
@@ -5240,13 +5632,22 @@
       container.innerHTML = displayLoans.map(loan => {
         const due = new Date(loan.dueDate + 'T00:00:00');
         const diffDays = Math.round((today - due) / (1000 * 60 * 60 * 24));
-        const isOverdue = diffDays > 0;
-        const isDueToday = diffDays === 0;
+        const isOverdue = loan.status !== 'PENDING' && diffDays > 0;
+        const isDueToday = loan.status !== 'PENDING' && diffDays === 0;
+        const isPending = loan.status === 'PENDING';
 
         let statusBadge = '';
         let cardBorder = 'border-slate-800';
 
-        if (isOverdue) {
+        if (isPending) {
+          cardBorder = 'border-amber-700/60 bg-gradient-to-b from-amber-950/20 to-slate-900/90';
+          statusBadge = `
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-950 text-amber-300 border border-amber-800 flex items-center gap-1.5 animate-pulse">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+              PENDING APPROVAL
+            </span>
+          `;
+        } else if (isOverdue) {
           cardBorder = 'border-rose-700/60 bg-gradient-to-b from-rose-950/20 to-slate-900/90';
           statusBadge = `
             <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-950 text-rose-300 border border-rose-800 flex items-center gap-1.5 animate-pulse">
@@ -5279,6 +5680,70 @@
           Projector: 'bg-sky-950 text-sky-300 border-sky-800',
           Tripod: 'bg-orange-950 text-orange-300 border-orange-800'
         }[loan.category] || 'bg-slate-900 text-slate-300 border-slate-700';
+
+        const isAdmin = currentUser && currentUser.role === 'ADMIN';
+
+        let actionArea = '';
+        if (isPending) {
+          if (isAdmin) {
+            actionArea = `
+              <div class="pt-2 border-t border-slate-800/80 font-sans flex items-center gap-2">
+                <button 
+                  type="button" 
+                  onclick="handleApproveLoan('${loan.loanId}')" 
+                  class="flex-1 py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-1 transition-all shadow-sm">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Approve</span>
+                </button>
+                <button 
+                  type="button" 
+                  onclick="handleRejectLoan('${loan.loanId}')" 
+                  class="flex-1 py-2 px-3 rounded-lg bg-rose-600/90 hover:bg-rose-500 text-white font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-1 transition-all shadow-sm">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                  <span>Reject</span>
+                </button>
+              </div>
+            `;
+          } else {
+            actionArea = `
+              <div class="pt-2 border-t border-slate-800/80 text-center">
+                <div class="py-1.5 px-3 rounded bg-amber-950/40 border border-amber-800/50 text-amber-300 text-[11px] font-mono">
+                  Application Awaiting Lab Staff Review
+                </div>
+              </div>
+            `;
+          }
+        } else if (isOverdue) {
+          actionArea = `
+            <div class="pt-2 border-t border-slate-800/80 font-sans flex items-center gap-2">
+              <button 
+                type="button" 
+                onclick="sendLineWarning('${loan.loanId}')" 
+                class="flex-1 py-2 px-3 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-1.5 transition-all shadow-md shadow-rose-600/20">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                <span>Send Line Warning</span>
+              </button>
+              <button 
+                type="button" 
+                onclick="openReturnModal('${loan.loanId}')" 
+                class="py-2 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs uppercase tracking-wide transition-all">
+                Return
+              </button>
+            </div>
+          `;
+        } else {
+          actionArea = `
+            <div class="pt-2 border-t border-slate-800/80 font-sans">
+              <button 
+                type="button" 
+                onclick="openReturnModal('${loan.loanId}')" 
+                class="w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-1.5 transition-all shadow-md shadow-emerald-600/20">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <span>Return Item & Inspect Condition</span>
+              </button>
+            </div>
+          `;
+        }
 
         return `
           <div class="rounded-xl border ${cardBorder} bg-slate-900/90 p-4 shadow-xl flex flex-col justify-between space-y-3 font-mono text-xs transition-all hover:border-slate-700">
@@ -5341,16 +5806,8 @@
               </div>
             ` : ''}
 
-            <!-- Card Action: Return Item Button -->
-            <div class="pt-2 border-t border-slate-800/80 font-sans">
-              <button 
-                type="button" 
-                onclick="openReturnModal('${loan.loanId}')" 
-                class="w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-1.5 transition-all shadow-md shadow-emerald-600/20">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                <span>Return Item & Inspect Condition</span>
-              </button>
-            </div>
+            <!-- Card Action Area -->
+            ${actionArea}
 
           </div>
         `;
@@ -5578,6 +6035,551 @@
     }
 
     // =========================================================================
+    // M5: ADMIN CONTROL PANEL & OVERDUE MONITORING (APPROVALS, LINE RECALL & ASSETS)
+    // =========================================================================
+
+    // 1. Master Admin Control Panel Coordinator
+    function renderAdminControlPanel() {
+      if (!currentUser || currentUser.role !== 'ADMIN') {
+        return;
+      }
+
+      // 1.1 Compute real-time admin KPIs
+      const pendingLoans = appLoans.filter(l => l.status === 'PENDING');
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // Auto-detect overdue loans: compare expected_return_date with current date
+      let overdueCount = 0;
+      appLoans.forEach(loan => {
+        if (loan.status === 'ACTIVE' || loan.status === 'OVERDUE') {
+          const due = new Date(loan.dueDate + 'T00:00:00');
+          const diffDays = Math.round((today - due) / (1000 * 60 * 60 * 24));
+          if (diffDays > 0) {
+            loan.status = 'OVERDUE';
+            loan.daysOverdue = diffDays;
+            overdueCount++;
+          } else if (loan.status === 'OVERDUE' && diffDays <= 0) {
+            loan.status = 'ACTIVE';
+            loan.daysOverdue = 0;
+          }
+        }
+      });
+
+      const studentsCount = appUsers.filter(u => u.role === 'STUDENT').length;
+      const catalogCount = appInventory.length;
+
+      // Update Quick Telemetry KPI Cards
+      const statPending = document.getElementById('admin-stat-pending');
+      const badgePending = document.getElementById('admin-kpi-pending-badge');
+      const statOverdue = document.getElementById('admin-stat-overdue');
+      const badgeOverdue = document.getElementById('admin-kpi-overdue-badge');
+      const statStudents = document.getElementById('admin-stat-students');
+      const statCatalog = document.getElementById('admin-stat-catalog');
+
+      if (statPending) statPending.innerText = pendingLoans.length;
+      if (badgePending) {
+        badgePending.innerText = pendingLoans.length > 0 ? `${pendingLoans.length} NEW` : 'CLEAR';
+        badgePending.className = pendingLoans.length > 0 
+          ? 'px-1.5 py-0.2 rounded bg-amber-950 text-amber-400 border border-amber-800 text-[10px] animate-pulse'
+          : 'px-1.5 py-0.2 rounded bg-slate-950 text-slate-400 border border-slate-800 text-[10px]';
+      }
+
+      if (statOverdue) statOverdue.innerText = overdueCount;
+      if (badgeOverdue) {
+        badgeOverdue.innerText = overdueCount > 0 ? `${overdueCount} RECALL` : 'ON TRACK';
+        badgeOverdue.className = overdueCount > 0 
+          ? 'px-1.5 py-0.2 rounded bg-rose-950 text-rose-400 border border-rose-800 text-[10px] animate-pulse'
+          : 'px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 text-[10px]';
+      }
+
+      if (statStudents) statStudents.innerText = studentsCount;
+      if (statCatalog) statCatalog.innerText = catalogCount;
+
+      // Render Admin sub-components
+      renderAdminPendingApprovals(pendingLoans);
+      renderAdminOverdueMonitor();
+      renderStudentDirectory();
+    }
+
+    // 2. Render Pending Approval Requests Table (M5 Requirement)
+    function renderAdminPendingApprovals(pendingLoansList = null) {
+      const tbody = document.getElementById('admin-pending-table-tbody');
+      const countBadge = document.getElementById('admin-pending-count');
+      const emptyState = document.getElementById('admin-pending-empty-state');
+      const tableContainer = document.getElementById('admin-pending-table-container');
+      const bulkActions = document.getElementById('admin-pending-bulk-actions');
+
+      const pending = pendingLoansList || appLoans.filter(l => l.status === 'PENDING');
+
+      if (countBadge) {
+        countBadge.innerText = `${pending.length} Pending`;
+        if (pending.length > 0) {
+          countBadge.className = 'text-xs font-mono text-amber-400 bg-amber-950/90 px-2 py-0.5 rounded border border-amber-800/80 animate-pulse';
+        } else {
+          countBadge.className = 'text-xs font-mono text-slate-400 bg-slate-950/90 px-2 py-0.5 rounded border border-slate-800/80';
+        }
+      }
+
+      if (bulkActions) {
+        bulkActions.classList.toggle('hidden', pending.length <= 1);
+      }
+
+      if (!tbody) return;
+
+      if (pending.length === 0) {
+        tbody.innerHTML = '';
+        if (tableContainer) tableContainer.classList.add('hidden');
+        if (emptyState) emptyState.classList.remove('hidden');
+        return;
+      }
+
+      if (tableContainer) tableContainer.classList.remove('hidden');
+      if (emptyState) emptyState.classList.add('hidden');
+
+      tbody.innerHTML = pending.map(loan => {
+        return `
+          <tr class="hover:bg-slate-800/50 transition-colors">
+            <!-- REQ ID & DATE -->
+            <td class="p-3">
+              <div class="font-bold text-amber-400 font-mono flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
+                <span>${loan.loanId}</span>
+              </div>
+              <div class="text-[10px] text-slate-400 font-mono mt-0.5">Applied: ${loan.borrowDate}</div>
+            </td>
+
+            <!-- STUDENT BORROWER -->
+            <td class="p-3">
+              <div class="font-bold text-slate-100 font-sans text-xs">${loan.studentName}</div>
+              <div class="text-[10px] text-indigo-400 font-mono mt-0.5">ID: ${loan.studentId} · B${loan.batch || '68'}</div>
+              <div class="text-[10px] text-slate-400">${loan.major || 'Robotics & AI'}</div>
+              <div class="text-[10px] text-emerald-400 font-mono mt-0.5 flex items-center gap-1">
+                <span>Line: ${loan.lineId}</span>
+                <button 
+                  onclick="copyLineId('${loan.lineId}')" 
+                  title="Copy student Line ID"
+                  class="text-[9px] text-slate-500 hover:text-emerald-300">
+                  📋
+                </button>
+              </div>
+            </td>
+
+            <!-- REQUESTED ASSET -->
+            <td class="p-3 max-w-xs">
+              <div class="font-bold text-slate-200 font-sans text-xs">${loan.itemName}</div>
+              <div class="flex items-center gap-2 text-[10px] text-slate-400 font-mono mt-0.5">
+                <span>SN: ${loan.serialId}</span>
+                <span>·</span>
+                <span class="text-indigo-400 font-semibold">${loan.category || 'Equipment'}</span>
+                <span>·</span>
+                <span class="text-cyan-400 font-semibold">${loan.location || 'HA1'} Bay</span>
+              </div>
+            </td>
+
+            <!-- QUANTITY & DUE DATE -->
+            <td class="p-3 font-mono">
+              <div class="text-slate-100 font-bold">${loan.qty || 1} Unit(s)</div>
+              <div class="text-[11px] text-cyan-300 font-semibold mt-0.5">Due: ${loan.dueDate}</div>
+              <div class="text-[10px] text-slate-500">Max 7-day policy</div>
+            </td>
+
+            <!-- RESEARCH PURPOSE / USAGE NOTE -->
+            <td class="p-3 max-w-xs">
+              <div class="p-2 rounded bg-slate-950/60 border border-slate-800 text-[11px] font-mono text-slate-300 italic leading-relaxed">
+                "${loan.purpose || 'Laboratory experiment'}"
+              </div>
+            </td>
+
+            <!-- STATUS -->
+            <td class="p-3">
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-950 text-amber-300 border border-amber-800 flex items-center gap-1.5 w-fit animate-pulse">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                PENDING APPROVAL
+              </span>
+            </td>
+
+            <!-- DECISION ACTIONS (Approve / Reject Buttons) -->
+            <td class="p-3 text-right">
+              <div class="flex items-center justify-end gap-1.5 font-sans">
+                <!-- Approve Button -->
+                <button 
+                  onclick="handleApprovePendingLoan('${loan.loanId}')" 
+                  title="Authorize checkout and release hardware" 
+                  class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1 transition-all shadow-sm">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Approve</span>
+                </button>
+
+                <!-- Reject Button -->
+                <button 
+                  onclick="handleRejectPendingLoan('${loan.loanId}')" 
+                  title="Decline request and restock inventory" 
+                  class="px-2.5 py-1.5 rounded-lg bg-rose-950 hover:bg-rose-900 border border-rose-800 text-rose-300 font-bold text-xs flex items-center gap-1 transition-all">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                  <span>Reject</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // 3. Approve Pending Loan Handler (M5 Requirement)
+    function handleApprovePendingLoan(loanId) {
+      if (!currentUser || currentUser.role !== 'ADMIN') {
+        showToast('Admin privileges required to authorize equipment loans.', 'error');
+        return;
+      }
+
+      const loan = appLoans.find(l => l.loanId === loanId);
+      if (!loan) {
+        showToast('Borrow request not found.', 'error');
+        return;
+      }
+
+      loan.status = 'ACTIVE';
+
+      addActivity(
+        'LOAN',
+        'Borrow Request Approved',
+        `Admin Dr. Thanapat authorized ${loan.qty || 1}x ${loan.itemName} (${loan.serialId}) for ${loan.studentName} (Batch ${loan.batch}). Due: ${loan.dueDate}.`,
+        'emerald'
+      );
+
+      saveLoans();
+      saveActivities();
+      showToast(`Request ${loan.loanId} APPROVED! ${loan.itemName} is now Active for ${loan.studentName}.`, 'success');
+
+      renderAdminControlPanel();
+      renderDashboardAnalytics();
+      if (typeof renderActiveLoans === 'function') {
+        renderActiveLoans();
+      }
+    }
+
+    // Alias for active loan card calls
+    function handleApproveLoan(loanId) {
+      handleApprovePendingLoan(loanId);
+    }
+
+    // 4. Reject Pending Loan Handler (M5 Requirement - Restocks live_qty)
+    function handleRejectPendingLoan(loanId) {
+      if (!currentUser || currentUser.role !== 'ADMIN') {
+        showToast('Admin privileges required to reject equipment loans.', 'error');
+        return;
+      }
+
+      const loan = appLoans.find(l => l.loanId === loanId);
+      if (!loan) {
+        showToast('Borrow request not found.', 'error');
+        return;
+      }
+
+      // Restock the reserved live_qty back into inventory
+      const item = appInventory.find(it => it.itemId === loan.itemId || it.serialId === loan.serialId);
+      const qtyToRestock = Number(loan.qty) || 1;
+      if (item) {
+        item.availableQty = Math.min(Number(item.totalQty), Number(item.availableQty) + qtyToRestock);
+        item.borrowCount = Math.max(0, (Number(item.borrowCount) || 0) - qtyToRestock);
+        saveInventory();
+      }
+
+      // Mark request as rejected
+      loan.status = 'REJECTED';
+
+      addActivity(
+        'STOCK',
+        'Borrow Request Rejected',
+        `Admin Dr. Thanapat rejected request ${loan.loanId} for ${loan.itemName}. Restocked ${qtyToRestock} unit(s) back into shelf inventory.`,
+        'rose'
+      );
+
+      saveLoans();
+      saveActivities();
+      showToast(`Request ${loan.loanId} REJECTED. Restocked ${qtyToRestock}x "${loan.itemName}" into active inventory.`, 'info');
+
+      renderAdminControlPanel();
+      renderDashboardAnalytics();
+      handleInventoryFilterChange();
+      if (typeof populateBorrowItemDropdown === 'function') {
+        populateBorrowItemDropdown(currentBorrowCategoryFilter);
+      }
+      if (typeof renderActiveLoans === 'function') {
+        renderActiveLoans();
+      }
+    }
+
+    // Alias for active loan card calls
+    function handleRejectLoan(loanId) {
+      handleRejectPendingLoan(loanId);
+    }
+
+    // 5. Approve All Pending Loans in Bulk
+    function handleApproveAllPendingLoans() {
+      if (!currentUser || currentUser.role !== 'ADMIN') return;
+
+      const pending = appLoans.filter(l => l.status === 'PENDING');
+      if (pending.length === 0) return;
+
+      pending.forEach(loan => {
+        loan.status = 'ACTIVE';
+      });
+
+      addActivity(
+        'LOAN',
+        'Bulk Approvals Authorized',
+        `Admin Dr. Thanapat approved ${pending.length} pending student hardware loans.`,
+        'emerald'
+      );
+
+      saveLoans();
+      saveActivities();
+      showToast(`Bulk authorized all ${pending.length} pending hardware requests!`, 'success');
+
+      renderAdminControlPanel();
+      renderDashboardAnalytics();
+      if (typeof renderActiveLoans === 'function') {
+        renderActiveLoans();
+      }
+    }
+
+    // 6. Overdue Auto-Detection & Line Recall Center (M5 Requirement)
+    function renderAdminOverdueMonitor() {
+      const tbody = document.getElementById('admin-overdue-table-tbody');
+      const countBadge = document.getElementById('admin-overdue-count');
+      const emptyState = document.getElementById('admin-overdue-empty-state');
+      const tableContainer = document.getElementById('admin-overdue-table-container');
+      const alertBanner = document.getElementById('admin-overdue-alert-banner');
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // Auto-detection logic: Compare expected_return_date with current date
+      const overdueList = [];
+      appLoans.forEach(loan => {
+        if (loan.status === 'ACTIVE' || loan.status === 'OVERDUE') {
+          const due = new Date(loan.dueDate + 'T00:00:00');
+          const diffDays = Math.round((today - due) / (1000 * 60 * 60 * 24));
+          if (diffDays > 0) {
+            loan.status = 'OVERDUE';
+            loan.daysOverdue = diffDays;
+            overdueList.push(loan);
+          } else {
+            loan.daysOverdue = 0;
+            if (loan.status === 'OVERDUE') {
+              loan.status = 'ACTIVE';
+            }
+          }
+        }
+      });
+
+      if (countBadge) {
+        countBadge.innerText = `${overdueList.length} Overdue`;
+        if (overdueList.length > 0) {
+          countBadge.className = 'text-xs font-mono text-rose-400 bg-rose-950/90 px-2 py-0.5 rounded border border-rose-800/80 animate-pulse';
+        } else {
+          countBadge.className = 'text-xs font-mono text-emerald-400 bg-emerald-950/90 px-2 py-0.5 rounded border border-emerald-800/80';
+        }
+      }
+
+      if (alertBanner) {
+        alertBanner.classList.toggle('hidden', overdueList.length === 0);
+      }
+
+      if (!tbody) return;
+
+      if (overdueList.length === 0) {
+        tbody.innerHTML = '';
+        if (tableContainer) tableContainer.classList.add('hidden');
+        if (emptyState) emptyState.classList.remove('hidden');
+        return;
+      }
+
+      if (tableContainer) tableContainer.classList.remove('hidden');
+      if (emptyState) emptyState.classList.add('hidden');
+
+      // Sort by most overdue first
+      overdueList.sort((a, b) => (b.daysOverdue || 0) - (a.daysOverdue || 0));
+
+      tbody.innerHTML = overdueList.map(loan => {
+        return `
+          <tr class="hover:bg-slate-800/50 transition-colors">
+            <!-- LOAN ID -->
+            <td class="p-3">
+              <div class="font-bold text-rose-400 font-mono flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping"></span>
+                <span>${loan.loanId}</span>
+              </div>
+              <div class="text-[10px] text-slate-500 font-mono mt-0.5">Out: ${loan.borrowDate}</div>
+            </td>
+
+            <!-- EQUIPMENT & SERIAL -->
+            <td class="p-3 max-w-xs">
+              <div class="font-bold text-slate-200 font-sans text-xs">${loan.itemName}</div>
+              <div class="flex items-center gap-2 text-[10px] text-slate-400 font-mono mt-0.5">
+                <span>SN: ${loan.serialId}</span>
+                <span>·</span>
+                <span class="text-cyan-400 font-semibold">${loan.location || 'HA1'} Bay</span>
+              </div>
+            </td>
+
+            <!-- STUDENT BORROWER -->
+            <td class="p-3">
+              <div class="font-bold text-slate-100 font-sans text-xs">${loan.studentName}</div>
+              <div class="text-[10px] text-indigo-400 font-mono mt-0.5">ID: ${loan.studentId} · B${loan.batch || '68'}</div>
+              <div class="text-[10px] text-slate-400">${loan.major || 'Robotics & AI'}</div>
+            </td>
+
+            <!-- LINE ID (RECALL CHANNEL) -->
+            <td class="p-3 font-mono">
+              <div class="flex items-center gap-1.5">
+                <span class="text-emerald-400 font-bold">${loan.lineId}</span>
+                <button 
+                  onclick="copyLineId('${loan.lineId}')" 
+                  title="Copy student Line ID"
+                  class="p-1 rounded bg-slate-950 border border-slate-800 hover:border-emerald-500 text-slate-400 hover:text-white transition-colors">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                </button>
+              </div>
+              <div class="text-[10px] text-slate-500 mt-0.5">Direct chat handle</div>
+            </td>
+
+            <!-- DATES & OVERDUE DURATION (Prominent Red "OVERDUE" Badge) -->
+            <td class="p-3 font-mono">
+              <div class="text-slate-300 text-xs">Expected: ${loan.dueDate}</div>
+              <div class="mt-1">
+                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-950 text-rose-300 border border-rose-800 flex items-center gap-1.5 w-fit shadow-md shadow-rose-950/50 animate-pulse">
+                  <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+                  <span>OVERDUE (+${loan.daysOverdue} Days Late)</span>
+                </span>
+              </div>
+            </td>
+
+            <!-- PURPOSE -->
+            <td class="p-3 max-w-xs">
+              <div class="text-[11px] text-slate-400 font-mono truncate italic" title="${loan.purpose || ''}">
+                "${loan.purpose || 'Laboratory research project'}"
+              </div>
+            </td>
+
+            <!-- DISPATCH ACTIONS ("Send Line Warning" Button) -->
+            <td class="p-3 text-right">
+              <div class="flex items-center justify-end gap-1.5 font-sans">
+                <!-- Send Line Warning Button -->
+                <button 
+                  onclick="sendLineWarning('${loan.loanId}')" 
+                  title="Copies structured recall warning message with student Line ID to clipboard" 
+                  class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-md shadow-rose-600/30">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                  <span>Send Line Warning</span>
+                </button>
+
+                <!-- Quick Return Button -->
+                <button 
+                  onclick="openReturnModal('${loan.loanId}')" 
+                  title="Inspect and restock returned hardware" 
+                  class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition-colors">
+                  Return
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // 7. Send Line Warning (Copies template warning message with student Line ID to clipboard)
+    function sendLineWarning(loanId) {
+      const loan = appLoans.find(l => l.loanId === loanId);
+      if (!loan) {
+        showToast('Loan record not found.', 'error');
+        return;
+      }
+
+      // Generate structured, formal Line recall notification
+      const messageTemplate = 
+`🚨 [RAI ROBOTICS & AI LAB — OVERDUE EQUIPMENT NOTICE] 🚨
+--------------------------------------------------
+To: ${loan.studentName} (Student ID: ${loan.studentId}, Batch ${loan.batch || '68'})
+Line ID: ${loan.lineId}
+Major: ${loan.major || 'Robotics & AI'}
+
+⚠️ URGENT RECALL: The following laboratory hardware asset is past its expected return date and requires immediate return:
+
+📦 Equipment: ${loan.itemName}
+🔖 Serial / Asset ID: ${loan.serialId}
+📍 Bay Location: ${loan.location || 'HA1'}
+📅 Borrowed Date: ${loan.borrowDate}
+⏳ Expected Return Date: ${loan.dueDate}
+⚠️ Overdue Status: ${loan.daysOverdue || 1} day(s) overdue
+
+Please return this hardware to the RAI Robotics & AI Lab (Room 304) immediately to clear your student account and avoid borrowing suspension.
+If you require an extension for ongoing research, contact Lab Administrator Dr. Thanapat immediately.
+--------------------------------------------------
+[RAI Robotics & AI Lab Automation System]`;
+
+      navigator.clipboard.writeText(messageTemplate).then(() => {
+        showToast(`📋 Warning message copied! Ready to paste into Line chat with ${loan.lineId}.`, 'success');
+      }).catch(() => {
+        window.prompt(`Copy this Line Warning for ${loan.studentName} (${loan.lineId}):`, messageTemplate);
+        showToast(`Line Warning Template ready for ${loan.lineId}.`, 'info');
+      });
+
+      // Log dispatch event to timeline
+      addActivity(
+        'OVERDUE',
+        'Line Warning Dispatched',
+        `Admin Dr. Thanapat generated overdue warning for ${loan.studentName} (${loan.lineId}) regarding ${loan.itemName} (${loan.daysOverdue || 1}d late).`,
+        'rose'
+      );
+
+      saveActivities();
+      if (typeof renderDashboardAnalytics === 'function') {
+        renderDashboardAnalytics();
+      }
+    }
+
+    // 8. Manual Overdue Scanner (Triggered via "Scan Overdue" button in Admin Header)
+    function scanOverdueLoansManual() {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      let detected = 0;
+      appLoans.forEach(loan => {
+        if (loan.status === 'ACTIVE' || loan.status === 'OVERDUE') {
+          const due = new Date(loan.dueDate + 'T00:00:00');
+          const diffDays = Math.round((today - due) / (1000 * 60 * 60 * 24));
+          if (diffDays > 0) {
+            loan.status = 'OVERDUE';
+            loan.daysOverdue = diffDays;
+            detected++;
+          } else {
+            loan.daysOverdue = 0;
+            if (loan.status === 'OVERDUE') {
+              loan.status = 'ACTIVE';
+            }
+          }
+        }
+      });
+
+      saveLoans();
+      renderAdminControlPanel();
+      renderDashboardAnalytics();
+      if (typeof renderActiveLoans === 'function') {
+        renderActiveLoans();
+      }
+
+      if (detected > 0) {
+        showToast(`Auto-detection completed: ${detected} active loan(s) flagged as OVERDUE!`, 'error');
+      } else {
+        showToast(`Scan complete: All laboratory borrowings are currently on schedule.`, 'success');
+      }
+    }
+
+    // =========================================================================
     // 15. Setup on DOM Ready
     // =========================================================================
     window.addEventListener('DOMContentLoaded', () => {
@@ -5591,6 +6593,7 @@
       renderStudentDirectory();
       renderDashboardAnalytics();
       initBorrowDesk();
+      renderAdminControlPanel();
 
       const toggleBtn = document.getElementById('btn-toggle-drawer');
       if (toggleBtn) {
