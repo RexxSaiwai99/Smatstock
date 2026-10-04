@@ -204,9 +204,9 @@
               <span class="font-tech text-base font-bold tracking-wider text-slate-100 uppercase">
                 RAI Robotics & AI Lab
               </span>
-              <span class="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/40 px-1.5 py-0.5 rounded">
-                <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-                M2 INVENTORY LIVE
+              <span class="inline-flex items-center gap-1 text-[10px] font-mono text-cyan-400 bg-cyan-950/60 border border-cyan-800/40 px-1.5 py-0.5 rounded">
+                <span class="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-ping"></span>
+                M3 ANALYTICS LIVE
               </span>
             </div>
             <div class="text-[11px] text-slate-400 font-mono hidden sm:block">
@@ -408,113 +408,228 @@
         <!-- VIEW 1: DASHBOARD TAB VIEW                                            -->
         <!-- ===================================================================== -->
         <section id="view-dashboard" class="tab-view active space-y-6">
+          
+          <!-- Top Header & Live Telemetry Controls -->
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
             <div>
               <div class="flex items-center gap-2">
                 <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-100 font-tech">
                   ANALYTICS COMMAND CENTER
                 </h1>
-                <span class="font-mono text-xs text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800/60">
-                  M1 AUTH INTEGRATED
+                <span class="font-mono text-xs text-cyan-400 bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-800/60 flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
+                  M3 TELEMETRY LIVE
                 </span>
               </div>
               <p class="text-xs text-slate-400 mt-1 font-mono">
-                Real-time stock utilization, student major breakdown, overdue loans, and lab monitoring.
+                Real-time stock utilization, student batch kinematics, inventory health index, and predictive risk monitoring.
               </p>
             </div>
             <div class="flex items-center gap-2">
-              <button onclick="switchTab('borrow')" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-sm">
-                <span>Borrow & Return Desk</span>
+              <button onclick="updateDashboardAnalytics()" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 rounded-lg text-xs font-mono transition-colors flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                <span>Refresh Telemetry</span>
+              </button>
+              <button onclick="switchTab('inventory')" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-sm">
+                <span>Browse Inventory</span>
                 <span class="font-mono">&rarr;</span>
               </button>
             </div>
           </div>
 
-          <!-- M1 Welcome & User Status Banner -->
-          <div class="rounded-xl border border-indigo-800/60 bg-gradient-to-r from-indigo-950/40 to-slate-900 p-6 shadow-xl">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div class="flex items-start gap-3.5">
-                <div class="w-10 h-10 rounded-lg bg-indigo-600/30 border border-indigo-500/50 flex items-center justify-center text-indigo-300 font-bold shrink-0 font-mono">
-                  M1
+          <!-- 1. FOUR CORE KPI SUMMARY CARDS -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="kpi-cards-container">
+            <!-- Dynamically populated by renderDashboardAnalytics -->
+          </div>
+
+          <!-- 2. MAIN ANALYTICS ROW: TOP 10 LEADERBOARD & CATEGORY BREAKDOWN -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Top 10 Most Borrowed Items Leaderboard (7 Cols) -->
+            <div class="lg:col-span-7 rounded-xl border border-slate-800 bg-slate-900/90 shadow-xl p-5 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                    <h2 class="text-sm font-bold text-slate-100 font-tech uppercase tracking-wide">
+                      Top 10 Most Borrowed Equipment Leaderboard
+                    </h2>
+                  </div>
+                  <span class="text-[11px] font-mono text-slate-400">Cumulative Checkouts</span>
                 </div>
-                <div>
-                  <h3 id="dashboard-welcome-heading" class="text-sm font-bold text-indigo-200 uppercase tracking-wide font-tech">
-                    Authentication & Session Storage Active
-                  </h3>
-                  <p id="dashboard-welcome-body" class="text-xs text-slate-300 mt-1 leading-relaxed max-w-2xl">
-                    Milestone M1 establishes dual-role authentication: student registration with academic batch & major tracking, password verification, and admin portal security with persistent <code class="text-indigo-400 font-mono">localStorage</code> sessions.
-                  </p>
+                <div id="top-borrowed-container" class="space-y-2.5">
+                  <!-- Populated by JavaScript -->
                 </div>
               </div>
-              <div class="flex items-center gap-2 shrink-0">
-                <button onclick="openAuthModal('signup')" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition-colors">
-                  + Register Student
-                </button>
-                <button onclick="openAuthModal('login')" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 rounded-lg text-xs font-mono transition-colors">
-                  Switch Account
-                </button>
+              <div class="pt-3 border-t border-slate-800/80 text-[11px] font-mono text-slate-400 flex items-center justify-between mt-3">
+                <span>Leaderboard dynamically recalculates based on verified checkout logs</span>
+                <button onclick="switchTab('inventory')" class="text-indigo-400 hover:underline">View Catalog &rarr;</button>
+              </div>
+            </div>
+
+            <!-- Category Breakdown & Asset Allocation (5 Cols) -->
+            <div class="lg:col-span-5 rounded-xl border border-slate-800 bg-slate-900/90 shadow-xl p-5 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-indigo-400"></span>
+                    <h2 class="text-sm font-bold text-slate-100 font-tech uppercase tracking-wide">
+                      Category Breakdown & Capital Allocation
+                    </h2>
+                  </div>
+                  <span class="text-[11px] font-mono text-slate-400">6 Categories</span>
+                </div>
+                <div id="category-breakdown-container" class="space-y-3.5">
+                  <!-- Populated by JavaScript -->
+                </div>
+              </div>
+              <div class="pt-3 border-t border-slate-800/80 text-[11px] font-mono text-slate-400 flex items-center justify-between mt-3">
+                <span>Utilization represents active in-field vs stored units</span>
+                <span class="text-emerald-400 font-semibold" id="cat-total-units-badge">215 Units Total</span>
               </div>
             </div>
           </div>
 
-          <!-- Wireframe Metric Cards -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-5 flex flex-col justify-between">
-              <div class="flex items-center justify-between text-slate-400 text-xs font-mono">
-                <span>REGISTERED USERS</span>
-                <span class="text-emerald-400">ACTIVE</span>
+          <!-- 3. DEMOGRAPHICS ROW: BATCH UTILIZATION & MAJOR UTILIZATION -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Academic Batch Utilization (6 Cols) -->
+            <div class="lg:col-span-6 rounded-xl border border-slate-800 bg-slate-900/90 shadow-xl p-5">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+                  <h2 class="text-sm font-bold text-slate-100 font-tech uppercase tracking-wide">
+                    Borrowing Activity by Academic Batch
+                  </h2>
+                </div>
+                <span class="text-[11px] font-mono text-slate-400">Batch 67 vs 68 vs 69 vs 70</span>
               </div>
-              <div class="my-4">
-                <div id="card-user-count" class="text-2xl font-bold font-mono text-slate-100">4 Students + 1 Admin</div>
-                <div class="text-xs text-slate-400 mt-1">Batches 67, 68, 69 enrolled</div>
-              </div>
-              <div class="w-full bg-slate-800 rounded-full h-1.5">
-                <div class="bg-emerald-500 h-1.5 rounded-full" style="width: 100%"></div>
-              </div>
-            </div>
-
-            <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-5 flex flex-col justify-between">
-              <div class="flex items-center justify-between text-slate-400 text-xs font-mono">
-                <span>INVENTORY CATALOG</span>
-                <span class="text-indigo-400">READY</span>
-              </div>
-              <div class="my-4">
-                <div id="card-inv-count" class="text-2xl font-bold font-mono text-slate-100">33 Items / 215 Units</div>
-                <div id="card-inv-sub" class="text-xs text-slate-400 mt-1">Live catalog with multi-filter</div>
-              </div>
-              <div class="w-full bg-slate-800 rounded-full h-1.5">
-                <div class="bg-indigo-500 h-1.5 rounded-full" style="width: 88%"></div>
+              <div id="batch-chart-container" class="space-y-4">
+                <!-- SVG column chart populated by JavaScript -->
               </div>
             </div>
 
-            <div class="rounded-xl border border-rose-950/40 bg-slate-900/60 p-5 flex flex-col justify-between">
-              <div class="flex items-center justify-between text-rose-400 text-xs font-mono">
-                <span>OVERDUE RISK CENTER</span>
-                <span class="text-rose-400 font-bold">2 ITEMS</span>
+            <!-- Major Utilization Distribution (6 Cols) -->
+            <div class="lg:col-span-6 rounded-xl border border-slate-800 bg-slate-900/90 shadow-xl p-5">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                  <h2 class="text-sm font-bold text-slate-100 font-tech uppercase tracking-wide">
+                    Major Utilization Distribution
+                  </h2>
+                </div>
+                <span class="text-[11px] font-mono text-slate-400">Cross-Disciplinary Ratio</span>
               </div>
-              <div class="my-4">
-                <div class="text-2xl font-bold font-mono text-rose-300">Alex Chen & Kenji</div>
-                <div class="text-xs text-rose-400/80 mt-1">Line ID copy tags ready</div>
-              </div>
-              <div class="w-full bg-slate-800 rounded-full h-1.5">
-                <div class="bg-rose-500 h-1.5 rounded-full" style="width: 45%"></div>
-              </div>
-            </div>
-
-            <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-5 flex flex-col justify-between">
-              <div class="flex items-center justify-between text-slate-400 text-xs font-mono">
-                <span>SESSION STATUS</span>
-                <span id="card-session-role" class="text-indigo-400 font-bold">ADMIN</span>
-              </div>
-              <div class="my-4">
-                <div id="card-session-name" class="text-xl font-bold font-sans text-slate-100 truncate">Dr. Thanapat</div>
-                <div id="card-session-line" class="text-xs font-mono text-emerald-400 mt-1 truncate">Line: @director_rai</div>
-              </div>
-              <div class="w-full bg-slate-800 rounded-full h-1.5">
-                <div class="bg-cyan-500 h-1.5 rounded-full" style="width: 90%"></div>
+              <div id="major-chart-container" class="space-y-4">
+                <!-- SVG Donut chart and legend populated by JavaScript -->
               </div>
             </div>
           </div>
+
+          <!-- 4. OPERATIONAL RISK ROW: LOW STOCK ALERTS & OVERDUE RISK MONITOR -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Low Stock & Reorder Alert Widget (5 Cols) -->
+            <div class="lg:col-span-5 rounded-xl border border-slate-800 bg-slate-900/90 shadow-xl p-5 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-rose-400 animate-pulse"></span>
+                    <h2 class="text-sm font-bold text-slate-100 font-tech uppercase tracking-wide">
+                      Low Stock & Reorder Alerts
+                    </h2>
+                  </div>
+                  <span id="low-stock-count-badge" class="px-2 py-0.5 rounded text-[10px] font-mono bg-rose-950 text-rose-300 border border-rose-800">
+                    0 Critical Items
+                  </span>
+                </div>
+                <p class="text-xs text-slate-400 mb-3 font-mono">
+                  Hardware assets with available quantity ≤ 1. Immediate replenishment or loan recall required.
+                </p>
+                <div id="low-stock-list-container" class="space-y-2 max-h-72 overflow-y-auto pr-1">
+                  <!-- Populated by JavaScript -->
+                </div>
+              </div>
+              <div class="pt-3 border-t border-slate-800/80 text-[11px] font-mono text-slate-400 flex items-center justify-between mt-3">
+                <span>Staff can quick-restock units directly via Admin credentials</span>
+              </div>
+            </div>
+
+            <!-- Overdue Risk Monitor Card (7 Cols) -->
+            <div class="lg:col-span-7 rounded-xl border border-slate-800 bg-slate-900/90 shadow-xl p-5 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping"></span>
+                    <h2 class="text-sm font-bold text-slate-100 font-tech uppercase tracking-wide">
+                      Overdue Risk Monitor & 1-Click Line Dispatch
+                    </h2>
+                  </div>
+                  <span id="overdue-badge-count" class="px-2 py-0.5 rounded text-[10px] font-mono bg-rose-950 text-rose-300 border border-rose-800">
+                    3 Active Overdue
+                  </span>
+                </div>
+                <p class="text-xs text-slate-400 mb-3 font-mono">
+                  Overdue loans flagged past agreed return deadlines. Click "Copy Line ID" to initiate instant student recall notification.
+                </p>
+                <div id="overdue-table-container" class="overflow-x-auto">
+                  <!-- Populated by JavaScript -->
+                </div>
+              </div>
+              <div class="pt-3 border-t border-slate-800/80 text-[11px] font-mono text-slate-400 flex items-center justify-between mt-3">
+                <span>Automated Line ID copying formats ready for group messaging</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. INFRASTRUCTURE & ACTIVITY ROW: LOCATION ALLOCATION, PEAK HOURS, ACTIVITY TIMELINE -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Location Allocation Chart (4 Cols) -->
+            <div class="lg:col-span-4 rounded-xl border border-slate-800 bg-slate-900/90 shadow-xl p-5">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-indigo-400"></span>
+                  <h2 class="text-sm font-bold text-slate-100 font-tech uppercase tracking-wide">
+                    Location Asset Allocation
+                  </h2>
+                </div>
+                <span class="text-[11px] font-mono text-slate-400">HA1 · HE3 · RCL</span>
+              </div>
+              <div id="location-allocation-container" class="space-y-4">
+                <!-- Populated by JavaScript -->
+              </div>
+            </div>
+
+            <!-- Peak Utilization Times Insight Card (4 Cols) -->
+            <div class="lg:col-span-4 rounded-xl border border-slate-800 bg-slate-900/90 shadow-xl p-5">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+                  <h2 class="text-sm font-bold text-slate-100 font-tech uppercase tracking-wide">
+                    Peak Utilization Times
+                  </h2>
+                </div>
+                <span class="text-[11px] font-mono text-slate-400">08:00 - 20:00</span>
+              </div>
+              <div id="peak-hours-container" class="space-y-4">
+                <!-- SVG Hourly Bar Chart populated by JavaScript -->
+              </div>
+            </div>
+
+            <!-- Recent Activity Feed Timeline (4 Cols) -->
+            <div class="lg:col-span-4 rounded-xl border border-slate-800 bg-slate-900/90 shadow-xl p-5">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                  <h2 class="text-sm font-bold text-slate-100 font-tech uppercase tracking-wide">
+                    Recent Lab Activity Timeline
+                  </h2>
+                </div>
+                <span class="text-[11px] font-mono text-slate-400">Audit Feed</span>
+              </div>
+              <div id="activity-feed-container" class="space-y-3 max-h-80 overflow-y-auto pr-1">
+                <!-- Populated by JavaScript -->
+              </div>
+            </div>
+          </div>
+
         </section>
 
         <!-- ===================================================================== -->
@@ -1128,6 +1243,8 @@
     const STORAGE_KEY_SESSION = 'rai_auth_session_m1';
     const STORAGE_KEY_USERS = 'rai_users_db_m1';
     const STORAGE_KEY_INVENTORY = 'rai_inventory_db_m2';
+    const STORAGE_KEY_LOANS = 'rai_loans_db_m3';
+    const STORAGE_KEY_ACTIVITIES = 'rai_activities_db_m3';
 
     // Default Pre-Seeded Users
     const DEFAULT_USERS = [
@@ -1589,9 +1706,235 @@
       }
     ];
 
+    // Pre-Seeded Loan Records (Milestone M3 Analytics & Overdue Monitoring)
+    const DEFAULT_LOANS = [
+      {
+        loanId: 'LN-2026-001',
+        studentId: '67010042',
+        studentName: 'Alex Chen',
+        batch: 67,
+        major: 'Robotics & AI',
+        lineId: '@alex_rai67',
+        itemId: 'LAP-ACER-01',
+        itemName: 'ACER Nitro 5 Gaming Laptop',
+        serialId: 'SN-NITRO-5541',
+        borrowDate: '2026-09-24',
+        dueDate: '2026-10-01',
+        status: 'OVERDUE',
+        daysOverdue: 3,
+        purpose: 'ROS2 Gazebo 3D Simulation'
+      },
+      {
+        loanId: 'LN-2026-002',
+        studentId: '68010115',
+        studentName: 'Kenji Tanaka',
+        batch: 68,
+        major: 'Computer Engineering',
+        lineId: '@kenji_cpe68',
+        itemId: 'MCU-JET-01',
+        itemName: 'NVIDIA Jetson Orin Nano Developer Kit',
+        serialId: 'SN-JET-0801',
+        borrowDate: '2026-09-20',
+        dueDate: '2026-09-29',
+        status: 'OVERDUE',
+        daysOverdue: 5,
+        purpose: 'TensorRT Deep Learning Inference'
+      },
+      {
+        loanId: 'LN-2026-003',
+        studentId: '67010088',
+        studentName: 'Sara Varma',
+        batch: 67,
+        major: 'Mechatronics',
+        lineId: '@sara_mct67',
+        itemId: 'TOOL-OSC-01',
+        itemName: 'Keysight InfiniiVision 200MHz Oscilloscope',
+        serialId: 'SN-KEY-1204',
+        borrowDate: '2026-09-26',
+        dueDate: '2026-10-03',
+        status: 'OVERDUE',
+        daysOverdue: 1,
+        purpose: 'BLDC Inverter PWM Signals'
+      },
+      {
+        loanId: 'LN-2026-004',
+        studentId: '67010042',
+        studentName: 'Alex Chen',
+        batch: 67,
+        major: 'Robotics & AI',
+        lineId: '@alex_rai67',
+        itemId: 'SENS-CAM-01',
+        itemName: 'Intel RealSense Depth Camera D435i',
+        serialId: 'SN-CAM-4351',
+        borrowDate: '2026-10-01',
+        dueDate: '2026-10-08',
+        status: 'ACTIVE',
+        daysOverdue: 0,
+        purpose: 'Visual SLAM Point Cloud Testing'
+      },
+      {
+        loanId: 'LN-2026-005',
+        studentId: '67010088',
+        studentName: 'Sara Varma',
+        batch: 67,
+        major: 'Mechatronics',
+        lineId: '@sara_mct67',
+        itemId: 'MCU-RPI4-01',
+        itemName: 'Raspberry Pi 4B (8GB RAM)',
+        serialId: 'SN-RPI4-8842',
+        borrowDate: '2026-10-02',
+        dueDate: '2026-10-09',
+        status: 'ACTIVE',
+        daysOverdue: 0,
+        purpose: 'Robotic Arm Control Gateway'
+      },
+      {
+        loanId: 'LN-2026-006',
+        studentId: '69010033',
+        studentName: 'Tawan Srisuk',
+        batch: 69,
+        major: 'Electrical Engineering',
+        lineId: '@tawan_ee69',
+        itemId: 'TOOL-FLUKE-01',
+        itemName: 'Fluke 87V Industrial True-RMS Multimeter',
+        serialId: 'SN-FLUKE-87V',
+        borrowDate: '2026-10-02',
+        dueDate: '2026-10-09',
+        status: 'ACTIVE',
+        daysOverdue: 0,
+        purpose: 'Battery Management System Debug'
+      },
+      {
+        loanId: 'LN-2026-007',
+        studentId: '68010115',
+        studentName: 'Kenji Tanaka',
+        batch: 68,
+        major: 'Computer Engineering',
+        lineId: '@kenji_cpe68',
+        itemId: 'MCU-ESP-01',
+        itemName: 'ESP32-S3 WROOM Dual MCU with Camera',
+        serialId: 'SN-ESP-3320',
+        borrowDate: '2026-10-02',
+        dueDate: '2026-10-09',
+        status: 'ACTIVE',
+        daysOverdue: 0,
+        purpose: 'Wireless Sensor Node Mesh'
+      },
+      {
+        loanId: 'LN-2026-008',
+        studentId: '67010042',
+        studentName: 'Alex Chen',
+        batch: 67,
+        major: 'Robotics & AI',
+        lineId: '@alex_rai67',
+        itemId: 'TRI-FOTO-01',
+        itemName: 'Fotopro DIGI-3400 Pro Tripod',
+        serialId: 'SN-FOTO-3400',
+        borrowDate: '2026-09-15',
+        dueDate: '2026-09-22',
+        status: 'RETURNED',
+        daysOverdue: 0,
+        purpose: 'Stereo Vision Rig Calibration'
+      },
+      {
+        loanId: 'LN-2026-009',
+        studentId: '69010033',
+        studentName: 'Tawan Srisuk',
+        batch: 69,
+        major: 'Electrical Engineering',
+        lineId: '@tawan_ee69',
+        itemId: 'TOOL-HAK-01',
+        itemName: 'Hakko FX-888D Soldering Station',
+        serialId: 'SN-HAK-8880',
+        borrowDate: '2026-09-18',
+        dueDate: '2026-09-25',
+        status: 'RETURNED',
+        daysOverdue: 0,
+        purpose: 'PCB Surface Mount Soldering'
+      },
+      {
+        loanId: 'LN-2026-010',
+        studentId: '67010088',
+        studentName: 'Sara Varma',
+        batch: 67,
+        major: 'Mechatronics',
+        lineId: '@sara_mct67',
+        itemId: 'TOOL-KNIP-01',
+        itemName: 'Knipex Precision Wire Strippers',
+        serialId: 'SN-KNP-1620',
+        borrowDate: '2026-09-28',
+        dueDate: '2026-10-05',
+        status: 'RETURNED',
+        daysOverdue: 0,
+        purpose: 'Sensor Harness Assembly'
+      }
+    ];
+
+    // Pre-Seeded Activity Timeline Records
+    const DEFAULT_ACTIVITIES = [
+      {
+        id: 'ACT-01',
+        type: 'RETURN',
+        title: 'Equipment Returned',
+        desc: 'Tawan Srisuk (Batch 69) returned Hakko FX-888D Soldering Station in pristine condition.',
+        timestamp: '15m ago',
+        badgeColor: 'emerald'
+      },
+      {
+        id: 'ACT-02',
+        type: 'BORROW',
+        title: 'New Checkout Registered',
+        desc: 'Sara Varma (Batch 67) checked out Keysight InfiniiVision 200MHz Oscilloscope.',
+        timestamp: '2h ago',
+        badgeColor: 'indigo'
+      },
+      {
+        id: 'ACT-03',
+        type: 'STOCK',
+        title: 'Inventory Stock Adjusted',
+        desc: 'Admin Dr. Thanapat verified stock level for Fluke 87V Multimeter (+2 units).',
+        timestamp: '4h ago',
+        badgeColor: 'cyan'
+      },
+      {
+        id: 'ACT-04',
+        type: 'USER',
+        title: 'Student Profile Enrolled',
+        desc: 'Alex Chen (Batch 67, Robotics & AI) registered with Line contact @alex_rai67.',
+        timestamp: '1d ago',
+        badgeColor: 'purple'
+      },
+      {
+        id: 'ACT-05',
+        type: 'OVERDUE',
+        title: 'Overdue Deadline Warning',
+        desc: 'NVIDIA Jetson Orin Nano loan flagged 5 days past agreed return schedule.',
+        timestamp: '2d ago',
+        badgeColor: 'rose'
+      },
+      {
+        id: 'ACT-06',
+        type: 'BORROW',
+        title: 'Embedded System Dispatched',
+        desc: 'Kenji Tanaka (Batch 68) borrowed ESP32-S3 WROOM with Camera module.',
+        timestamp: '2d ago',
+        badgeColor: 'indigo'
+      },
+      {
+        id: 'ACT-07',
+        type: 'RESTOCK',
+        title: 'Safety Inspection Logged',
+        desc: 'Hakko soldering irons & Knipex wire strippers cleared bi-weekly safety certification.',
+        timestamp: '3d ago',
+        badgeColor: 'amber'
+      }
+    ];
+
     // App State
     let appUsers = [];
     let appInventory = [];
+    let appLoans = [];
+    let appActivities = [];
     let currentUser = null;
     let currentTab = 'dashboard';
     let isDrawerOpen = false;
@@ -1659,6 +2002,69 @@
     // 3. Save Users to LocalStorage
     function saveUsers() {
       localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(appUsers));
+      if (typeof renderDashboardAnalytics === 'function') {
+        renderDashboardAnalytics();
+      }
+    }
+
+    // 3b. Loans Storage Operations
+    function initLoans() {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY_LOANS);
+        if (stored) {
+          appLoans = JSON.parse(stored);
+        } else {
+          appLoans = [...DEFAULT_LOANS];
+          localStorage.setItem(STORAGE_KEY_LOANS, JSON.stringify(appLoans));
+        }
+      } catch (e) {
+        appLoans = [...DEFAULT_LOANS];
+      }
+    }
+
+    function saveLoans() {
+      localStorage.setItem(STORAGE_KEY_LOANS, JSON.stringify(appLoans));
+      if (typeof renderDashboardAnalytics === 'function') {
+        renderDashboardAnalytics();
+      }
+    }
+
+    // 3c. Activities Audit Feed Operations
+    function initActivities() {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY_ACTIVITIES);
+        if (stored) {
+          appActivities = JSON.parse(stored);
+        } else {
+          appActivities = [...DEFAULT_ACTIVITIES];
+          localStorage.setItem(STORAGE_KEY_ACTIVITIES, JSON.stringify(appActivities));
+        }
+      } catch (e) {
+        appActivities = [...DEFAULT_ACTIVITIES];
+      }
+    }
+
+    function saveActivities() {
+      localStorage.setItem(STORAGE_KEY_ACTIVITIES, JSON.stringify(appActivities));
+      if (typeof renderActivityTimeline === 'function') {
+        renderActivityTimeline(appActivities);
+      }
+    }
+
+    function addActivity(type, title, desc, badgeColor = 'indigo') {
+      const newAct = {
+        id: 'ACT-' + Date.now(),
+        type,
+        title,
+        desc,
+        timestamp: 'Just now',
+        badgeColor
+      };
+      appActivities.unshift(newAct);
+      if (appActivities.length > 30) {
+        appActivities = appActivities.slice(0, 30);
+      }
+      saveActivities();
     }
 
     // 4. Save Session to LocalStorage
@@ -1936,6 +2342,10 @@
 
       toggleDrawer(false);
       window.location.hash = tabId;
+
+      if (tabId === 'dashboard' && typeof renderDashboardAnalytics === 'function') {
+        renderDashboardAnalytics();
+      }
     }
 
     // 9. Auth Modal Operations
@@ -2196,6 +2606,9 @@
     function saveInventory() {
       localStorage.setItem(STORAGE_KEY_INVENTORY, JSON.stringify(appInventory));
       updateInventoryTelemetry();
+      if (typeof renderDashboardAnalytics === 'function') {
+        renderDashboardAnalytics();
+      }
     }
 
     // Update Telemetry & Badges across the interface
@@ -2633,14 +3046,1030 @@
       }
     }
 
+    // =========================================================================
+    // M3: COMPREHENSIVE LAB ANALYTICS DASHBOARD (PURE MATH & MODULAR RENDERERS)
+    // =========================================================================
+
+    // -------------------------------------------------------------------------
+    // 1. PURE MATH CALCULATION ENGINE (Zero DOM dependencies)
+    // -------------------------------------------------------------------------
+    function computeLabAnalytics(inventory, loans, users) {
+      const inv = inventory || [];
+      const lns = loans || [];
+      const usr = users || [];
+
+      // 1.1 KPI Aggregations
+      const totalSkus = inv.length;
+      const totalUnits = inv.reduce((sum, item) => sum + (Number(item.totalQty) || 0), 0);
+      const availableUnits = inv.reduce((sum, item) => sum + (Number(item.availableQty) || 0), 0);
+      const loanedUnits = Math.max(0, totalUnits - availableUnits);
+      const utilizationRate = totalUnits > 0 ? ((loanedUnits / totalUnits) * 100).toFixed(1) : '0.0';
+
+      const overdueLoans = lns.filter(l => l.status === 'OVERDUE');
+      const overdueCount = overdueLoans.length;
+      const activeLoans = lns.filter(l => l.status === 'ACTIVE');
+      const activeCount = activeLoans.length;
+      const returnedLoans = lns.filter(l => l.status === 'RETURNED');
+      const returnedCount = returnedLoans.length;
+
+      // 1.2 Top 10 Most Borrowed Items Leaderboard
+      const sortedByBorrow = [...inv].sort((a, b) => (Number(b.borrowCount) || 0) - (Number(a.borrowCount) || 0));
+      const topBorrowed = sortedByBorrow.slice(0, 10);
+      const maxBorrowCount = topBorrowed.length > 0 ? Math.max(1, Number(topBorrowed[0].borrowCount) || 1) : 1;
+
+      // 1.3 Category Breakdown (6 Standard Lab Categories)
+      const categoriesList = ['Laptop', 'Projector', 'Tripod', 'Microcontroller', 'Sensor', 'Tool'];
+      const categoryThemeMap = {
+        Laptop: { color: '#a855f7', bgClass: 'bg-purple-500', borderClass: 'border-purple-500/30' },
+        Projector: { color: '#0284c7', bgClass: 'bg-sky-500', borderClass: 'border-sky-500/30' },
+        Tripod: { color: '#ea580c', bgClass: 'bg-orange-500', borderClass: 'border-orange-500/30' },
+        Microcontroller: { color: '#06b6d4', bgClass: 'bg-cyan-500', borderClass: 'border-cyan-500/30' },
+        Sensor: { color: '#10b981', bgClass: 'bg-emerald-500', borderClass: 'border-emerald-500/30' },
+        Tool: { color: '#f59e0b', bgClass: 'bg-amber-500', borderClass: 'border-amber-500/30' }
+      };
+
+      const categoryStats = categoriesList.map(cat => {
+        const catItems = inv.filter(i => i.category === cat);
+        const catTotal = catItems.reduce((sum, it) => sum + (Number(it.totalQty) || 0), 0);
+        const catAvail = catItems.reduce((sum, it) => sum + (Number(it.availableQty) || 0), 0);
+        const catLoaned = Math.max(0, catTotal - catAvail);
+        const utilPct = catTotal > 0 ? Math.round((catLoaned / catTotal) * 100) : 0;
+        const theme = categoryThemeMap[cat] || { color: '#6366f1', bgClass: 'bg-indigo-500', borderClass: 'border-indigo-500/30' };
+
+        return {
+          category: cat,
+          itemCount: catItems.length,
+          totalUnits: catTotal,
+          availUnits: catAvail,
+          loanedUnits: catLoaned,
+          utilizationPct: utilPct,
+          color: theme.color,
+          bgClass: theme.bgClass,
+          borderClass: theme.borderClass
+        };
+      });
+
+      // 1.4 Academic Batch Utilization (67 vs 68 vs 69 vs 70)
+      const batches = [67, 68, 69, 70];
+      const batchCounts = { 67: 0, 68: 0, 69: 0, 70: 0 };
+      lns.forEach(loan => {
+        const b = Number(loan.batch);
+        if (batchCounts[b] !== undefined) {
+          batchCounts[b]++;
+        }
+      });
+      const totalBatchCheckouts = Math.max(1, Object.values(batchCounts).reduce((a, b) => a + b, 0));
+      const maxBatchCount = Math.max(1, ...Object.values(batchCounts));
+
+      const batchStats = batches.map(batch => {
+        const count = batchCounts[batch] || 0;
+        const pct = Math.round((count / totalBatchCheckouts) * 100);
+        const studentsInBatch = usr.filter(u => Number(u.batch) === batch && u.role === 'STUDENT').length;
+        let seniority = 'Senior Class';
+        let color = '#06b6d4'; // Cyan for B67
+        if (batch === 68) {
+          seniority = 'Junior Class';
+          color = '#6366f1'; // Indigo for B68
+        } else if (batch === 69) {
+          seniority = 'Sophomore Class';
+          color = '#10b981'; // Emerald for B69
+        } else if (batch === 70) {
+          seniority = 'Freshman Class';
+          color = '#f59e0b'; // Amber for B70
+        }
+
+        return {
+          batch,
+          seniority,
+          count,
+          pct,
+          maxBatchCount,
+          studentsInBatch,
+          color
+        };
+      });
+
+      // 1.5 Major Utilization Distribution (Robotics & AI vs Mechatronics vs CoE vs EE)
+      const majorDefs = [
+        { name: 'Robotics & AI', short: 'RAI', color: '#6366f1', bgClass: 'bg-indigo-500' },
+        { name: 'Mechatronics', short: 'MCT', color: '#06b6d4', bgClass: 'bg-cyan-500' },
+        { name: 'Computer Engineering', short: 'CPE', color: '#10b981', bgClass: 'bg-emerald-500' },
+        { name: 'Electrical Engineering', short: 'EE', color: '#f59e0b', bgClass: 'bg-amber-500' }
+      ];
+      const majorCounts = {
+        'Robotics & AI': 0,
+        'Mechatronics': 0,
+        'Computer Engineering': 0,
+        'Electrical Engineering': 0
+      };
+      lns.forEach(loan => {
+        if (majorCounts[loan.major] !== undefined) {
+          majorCounts[loan.major]++;
+        }
+      });
+      const totalMajorLoans = Math.max(1, Object.values(majorCounts).reduce((a, b) => a + b, 0));
+      let runningOffset = 0;
+      const majorStats = majorDefs.map(m => {
+        const count = majorCounts[m.name] || 0;
+        const pct = Math.round((count / totalMajorLoans) * 100);
+        const offset = runningOffset;
+        runningOffset += pct;
+        const enrolledStudents = usr.filter(u => u.major === m.name && u.role === 'STUDENT').length;
+        return {
+          ...m,
+          count,
+          pct,
+          offset,
+          enrolledStudents
+        };
+      });
+
+      // 1.6 Low Stock & Reorder Alert Items (availableQty <= 1)
+      const lowStockItems = inv.filter(it => Number(it.availableQty) <= 1);
+
+      // 1.7 Facility Location Allocation (HA1 vs HE3 vs RCL)
+      const locDefs = [
+        { code: 'HA1', name: 'Hardware Area 1 (HA1)', desc: 'Workbenches, power supplies & prototyping hand tools' },
+        { code: 'HE3', name: 'High-End Lab 3 (HE3)', desc: 'Workstations, Keysight oscilloscopes & Jetson Orin clusters' },
+        { code: 'RCL', name: 'Robotics Center Lab (RCL)', desc: 'Vision sensors, LiDAR rigs, CAN bus adapters & mobile robotics' }
+      ];
+      const locationStats = locDefs.map(loc => {
+        const locItems = inv.filter(it => it.location === loc.code);
+        const locTotal = locItems.reduce((sum, it) => sum + (Number(it.totalQty) || 0), 0);
+        const locAvail = locItems.reduce((sum, it) => sum + (Number(it.availableQty) || 0), 0);
+        const locLoaned = Math.max(0, locTotal - locAvail);
+        const utilPct = locTotal > 0 ? Math.round((locLoaned / locTotal) * 100) : 0;
+        const shareOfLab = totalUnits > 0 ? Math.round((locTotal / totalUnits) * 100) : 0;
+
+        return {
+          code: loc.code,
+          name: loc.name,
+          desc: loc.desc,
+          itemCount: locItems.length,
+          totalUnits: locTotal,
+          availUnits: locAvail,
+          loanedUnits: locLoaned,
+          utilizationPct: utilPct,
+          shareOfLab
+        };
+      });
+
+      // 1.8 Peak Utilization Hourly Profile
+      const peakHoursStats = [
+        { hour: '08:00', label: 'Morning Setup', count: 12, pct: 27 },
+        { hour: '10:00', label: 'Lab Practicals', count: 28, pct: 62 },
+        { hour: '12:00', label: 'Midday Recess', count: 16, pct: 35 },
+        { hour: '14:00', label: 'Core Projects (PEAK)', count: 45, pct: 100, isPeak: true },
+        { hour: '16:00', label: 'Capstone Sprint', count: 39, pct: 86 },
+        { hour: '18:00', label: 'Evening Study', count: 22, pct: 49 },
+        { hour: '20:00', label: 'Lab Lockout', count: 8, pct: 18 }
+      ];
+
+      return {
+        kpi: {
+          totalSkus,
+          totalUnits,
+          availableUnits,
+          loanedUnits,
+          utilizationRate,
+          overdueCount,
+          activeCount,
+          returnedCount,
+          totalStudents: usr.filter(u => u.role === 'STUDENT').length
+        },
+        topBorrowed,
+        maxBorrowCount,
+        categoryStats,
+        batchStats,
+        maxBatchCount,
+        totalBatchCheckouts,
+        majorStats,
+        totalMajorLoans,
+        lowStockItems,
+        overdueLoans,
+        locationStats,
+        peakHoursStats
+      };
+    }
+
+    // -------------------------------------------------------------------------
+    // 2. MODULAR DOM RENDERERS (Clean presentation bindings)
+    // -------------------------------------------------------------------------
+
+    // 2.1 KPI Summary Cards
+    function renderKpiCards(kpi) {
+      const container = document.getElementById('kpi-cards-container');
+      if (!container) return;
+
+      container.innerHTML = `
+        <!-- Card 1: Total SKUs -->
+        <div class="rounded-xl border border-indigo-900/40 bg-gradient-to-br from-slate-900/90 via-slate-900/70 to-indigo-950/20 p-4 shadow-lg hover:border-indigo-600/60 transition-all flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-mono uppercase tracking-wider text-indigo-400 font-semibold flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
+                Total Equipment SKUs
+              </span>
+              <div class="w-8 h-8 rounded-lg bg-indigo-950/80 border border-indigo-800/50 flex items-center justify-center text-indigo-300">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+              </div>
+            </div>
+            <div class="mt-2.5 flex items-baseline gap-2">
+              <span class="text-2xl sm:text-3xl font-extrabold font-mono text-slate-100 tracking-tight">${kpi.totalSkus}</span>
+              <span class="text-xs font-mono text-slate-400">Unique Models</span>
+            </div>
+          </div>
+          <div class="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-mono text-slate-400">
+            <span>6 Categorized Families</span>
+            <span class="text-indigo-300 bg-indigo-950/60 px-1.5 py-0.5 rounded border border-indigo-800/40">100% Enrolled</span>
+          </div>
+        </div>
+
+        <!-- Card 2: Total Items in Lab -->
+        <div class="rounded-xl border border-cyan-900/40 bg-gradient-to-br from-slate-900/90 via-slate-900/70 to-cyan-950/20 p-4 shadow-lg hover:border-cyan-600/60 transition-all flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-mono uppercase tracking-wider text-cyan-400 font-semibold flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                Total Physical Units
+              </span>
+              <div class="w-8 h-8 rounded-lg bg-cyan-950/80 border border-cyan-800/50 flex items-center justify-center text-cyan-300">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>
+              </div>
+            </div>
+            <div class="mt-2.5 flex items-baseline gap-2">
+              <span class="text-2xl sm:text-3xl font-extrabold font-mono text-slate-100 tracking-tight">${kpi.totalUnits}</span>
+              <span class="text-xs font-mono text-cyan-300">Units in Fleet</span>
+            </div>
+          </div>
+          <div class="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-mono text-slate-400">
+            <span>Available on Shelf</span>
+            <span class="text-emerald-400 font-bold font-mono">${kpi.availableUnits} Available</span>
+          </div>
+        </div>
+
+        <!-- Card 3: Total Currently Borrowed -->
+        <div class="rounded-xl border border-amber-900/40 bg-gradient-to-br from-slate-900/90 via-slate-900/70 to-amber-950/20 p-4 shadow-lg hover:border-amber-600/60 transition-all flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-mono uppercase tracking-wider text-amber-400 font-semibold flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                Units on Active Loan
+              </span>
+              <div class="w-8 h-8 rounded-lg bg-amber-950/80 border border-amber-800/50 flex items-center justify-center text-amber-300">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+              </div>
+            </div>
+            <div class="mt-2.5 flex items-baseline gap-2">
+              <span class="text-2xl sm:text-3xl font-extrabold font-mono text-slate-100 tracking-tight">${kpi.loanedUnits}</span>
+              <span class="text-xs font-mono text-amber-300">${kpi.utilizationRate}% Utilization</span>
+            </div>
+          </div>
+          <div class="mt-3 pt-2.5 border-t border-slate-800/80">
+            <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+              <div class="bg-gradient-to-r from-amber-500 to-amber-300 h-1.5 rounded-full transition-all duration-500" style="width: ${Math.min(100, Math.max(5, parseFloat(kpi.utilizationRate)))}%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 4: Overdue Count -->
+        <div class="rounded-xl border ${kpi.overdueCount > 0 ? 'border-rose-800/60 bg-gradient-to-br from-slate-900/90 via-slate-900/70 to-rose-950/30' : 'border-slate-800 bg-slate-900/90'} p-4 shadow-lg hover:border-rose-600/60 transition-all flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-mono uppercase tracking-wider ${kpi.overdueCount > 0 ? 'text-rose-400 font-bold' : 'text-slate-400'} flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full ${kpi.overdueCount > 0 ? 'bg-rose-400 animate-ping' : 'bg-slate-400'}"></span>
+                Overdue Checkouts
+              </span>
+              <div class="w-8 h-8 rounded-lg ${kpi.overdueCount > 0 ? 'bg-rose-950/80 border border-rose-800/50 text-rose-300' : 'bg-slate-800 border border-slate-700 text-slate-400'} flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+              </div>
+            </div>
+            <div class="mt-2.5 flex items-baseline gap-2">
+              <span class="text-2xl sm:text-3xl font-extrabold font-mono ${kpi.overdueCount > 0 ? 'text-rose-400' : 'text-slate-100'} tracking-tight">${kpi.overdueCount}</span>
+              <span class="text-xs font-mono text-slate-400">Past agreed return date</span>
+            </div>
+          </div>
+          <div class="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-mono">
+            <span class="${kpi.overdueCount > 0 ? 'text-rose-300 font-semibold' : 'text-slate-400'}">${kpi.overdueCount > 0 ? 'Recall Action Required' : 'All loans in good standing'}</span>
+            <span class="text-rose-400 font-mono text-[10px]">${kpi.activeCount} Active / ${kpi.returnedCount} Returned</span>
+          </div>
+        </div>
+      `;
+    }
+
+    // 2.2 Top 10 Most Borrowed Equipment Leaderboard
+    function renderTopBorrowedLeaderboard(topBorrowed, maxBorrowCount) {
+      const container = document.getElementById('top-borrowed-container');
+      if (!container) return;
+
+      if (!topBorrowed || topBorrowed.length === 0) {
+        container.innerHTML = '<div class="p-6 text-center text-xs font-mono text-slate-500">No checkout history available.</div>';
+        return;
+      }
+
+      container.innerHTML = topBorrowed.map((item, idx) => {
+        const rank = idx + 1;
+        const relativePct = Math.max(8, Math.round((Number(item.borrowCount) / maxBorrowCount) * 100));
+
+        // Rank Badge Styling
+        let rankBadgeClass = 'bg-slate-800 text-slate-400 border-slate-700';
+        let rankIcon = '';
+        if (rank === 1) {
+          rankBadgeClass = 'bg-amber-950/90 text-amber-300 border-amber-600/70 shadow-sm shadow-amber-900/30';
+          rankIcon = '★';
+        } else if (rank === 2) {
+          rankBadgeClass = 'bg-slate-800/90 text-slate-200 border-slate-400/60 shadow-sm';
+          rankIcon = '✦';
+        } else if (rank === 3) {
+          rankBadgeClass = 'bg-orange-950/80 text-orange-300 border-orange-600/60';
+          rankIcon = '◆';
+        }
+
+        return `
+          <div class="group p-2.5 rounded-lg bg-slate-950/60 border border-slate-800/80 hover:border-indigo-600/50 hover:bg-slate-900/60 transition-all flex flex-col gap-2">
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <span class="w-6 h-6 rounded-md font-mono text-xs font-bold flex items-center justify-center border shrink-0 ${rankBadgeClass}">
+                  ${rankIcon ? `<span class="text-[9px] mr-0.5">${rankIcon}</span>` : ''}${rank}
+                </span>
+                <div class="truncate">
+                  <div class="text-xs font-semibold text-slate-200 group-hover:text-indigo-300 transition-colors truncate">
+                    ${item.name}
+                  </div>
+                  <div class="flex items-center gap-2 text-[10px] font-mono text-slate-400 mt-0.5">
+                    <span>${item.serialId}</span>
+                    <span>·</span>
+                    <span>${item.brand}</span>
+                    <span>·</span>
+                    <span class="text-slate-300">${item.location}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <span class="font-mono text-xs font-bold text-slate-100">${item.borrowCount} <span class="text-[10px] text-slate-400 font-normal">borrows</span></span>
+                <button 
+                  onclick="borrowItemDirect('${item.itemId}')" 
+                  title="Checkout ${item.name}" 
+                  class="px-2 py-0.5 rounded bg-indigo-600/30 hover:bg-indigo-600 text-indigo-300 hover:text-white border border-indigo-500/40 text-[10px] font-mono font-semibold transition-colors">
+                  Borrow
+                </button>
+              </div>
+            </div>
+            
+            <!-- Popularity Progress Bar -->
+            <div class="w-full bg-slate-900 rounded-full h-1.5 overflow-hidden flex items-center">
+              <div 
+                class="h-1.5 rounded-full transition-all duration-500 ${rank <= 3 ? 'bg-gradient-to-r from-amber-500 to-indigo-500' : 'bg-gradient-to-r from-slate-600 to-indigo-500'}" 
+                style="width: ${relativePct}%">
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 2.3 Category Breakdown & Interactive Progress Bars
+    function renderCategoryBreakdown(categoryStats, totalUnits) {
+      const container = document.getElementById('category-breakdown-container');
+      const badge = document.getElementById('cat-total-units-badge');
+      if (badge) {
+        badge.innerText = `${totalUnits} Units Total`;
+      }
+      if (!container) return;
+
+      container.innerHTML = categoryStats.map(cat => {
+        return `
+          <div 
+            onclick="filterInventoryByCategoryFromDashboard('${cat.category}')" 
+            title="Click to view all ${cat.category} hardware in Inventory Catalog"
+            class="group p-2.5 rounded-lg bg-slate-950/60 border border-slate-800/80 hover:border-slate-700 hover:bg-slate-900/60 cursor-pointer transition-all space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full ${cat.bgClass}"></span>
+                <span class="font-semibold text-slate-200 group-hover:text-white transition-colors">${cat.category}</span>
+                <span class="text-[10px] font-mono text-slate-400">(${cat.itemCount} SKUs)</span>
+              </div>
+              <div class="flex items-center gap-2 font-mono text-[11px]">
+                <span class="text-slate-300 font-bold">${cat.utilizationPct}% <span class="text-[10px] text-slate-400 font-normal">in use</span></span>
+                <span class="text-slate-400">·</span>
+                <span class="text-emerald-400 font-semibold">${cat.availUnits} shelf</span>
+                <span class="text-slate-500">/</span>
+                <span class="text-slate-300">${cat.totalUnits} total</span>
+              </div>
+            </div>
+
+            <div class="w-full bg-slate-900 rounded-full h-2 overflow-hidden flex">
+              <!-- Active In-Use Bar -->
+              <div 
+                class="${cat.bgClass} h-2 rounded-l-full transition-all duration-500" 
+                style="width: ${cat.utilizationPct}%">
+              </div>
+              <!-- Available Shelf Bar -->
+              <div 
+                class="bg-slate-800 h-2 rounded-r-full transition-all duration-500" 
+                style="width: ${100 - cat.utilizationPct}%">
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 2.4 Academic Batch Utilization Chart (SVG Columns + Labels)
+    function renderBatchUtilizationChart(batchStats, maxBatchCount) {
+      const container = document.getElementById('batch-chart-container');
+      if (!container) return;
+
+      const chartW = 440;
+      const chartH = 150;
+      const baselineY = 115;
+      const colW = 68;
+
+      // Generate SVG column bars
+      const columnsSvg = batchStats.map((b, idx) => {
+        const x = 32 + idx * 102;
+        const barHeight = Math.max(8, Math.round((b.count / maxBatchCount) * 80));
+        const y = baselineY - barHeight;
+
+        return `
+          <!-- Bar Group for Batch ${b.batch} -->
+          <g class="transition-all hover:opacity-90">
+            <!-- Background Column Slot -->
+            <rect x="${x}" y="20" width="${colW}" height="${baselineY - 20}" rx="4" fill="#0f172a" opacity="0.6"/>
+            
+            <!-- Value Label on Top -->
+            <text x="${x + colW / 2}" y="${y - 6}" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" fill="#f1f5f9">
+              ${b.count} (${b.pct}%)
+            </text>
+
+            <!-- Animated Column Bar -->
+            <rect x="${x}" y="${y}" width="${colW}" height="${barHeight}" rx="4" fill="${b.color}">
+              <title>Batch ${b.batch}: ${b.count} checkouts (${b.pct}%)</title>
+            </rect>
+
+            <!-- X Axis Label -->
+            <text x="${x + colW / 2}" y="132" text-anchor="middle" font-family="'Chakra Petch', sans-serif" font-size="11" font-weight="bold" fill="#cbd5e1">
+              Batch ${b.batch}
+            </text>
+
+            <!-- Seniority Subtext -->
+            <text x="${x + colW / 2}" y="145" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="8.5" fill="#64748b">
+              ${b.seniority.replace(' Class', '')}
+            </text>
+          </g>
+        `;
+      }).join('');
+
+      container.innerHTML = `
+        <div class="w-full flex items-center justify-center overflow-x-auto pb-1">
+          <svg viewBox="0 0 ${chartW} ${chartH}" class="w-full max-w-lg h-auto select-none">
+            <!-- Grid Reference Lines -->
+            <line x1="20" y1="35" x2="420" y2="35" stroke="#1e293b" stroke-dasharray="3 3"/>
+            <line x1="20" y1="75" x2="420" y2="75" stroke="#1e293b" stroke-dasharray="3 3"/>
+            <line x1="20" y1="${baselineY}" x2="420" y2="${baselineY}" stroke="#334155" stroke-width="1.5"/>
+
+            ${columnsSvg}
+          </svg>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-slate-800 text-[11px] font-mono">
+          ${batchStats.map(b => `
+            <div class="p-2 rounded bg-slate-950/50 border border-slate-800/80 text-center">
+              <div class="text-[10px] text-slate-400 font-semibold" style="color: ${b.color}">Batch ${b.batch}</div>
+              <div class="text-xs font-bold text-slate-200 mt-0.5">${b.count} Checkouts</div>
+              <div class="text-[9px] text-slate-400 mt-0.5">${b.studentsInBatch} Active Students</div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // 2.5 Major Utilization Distribution (SVG Donut Chart + Legend)
+    function renderMajorDistributionChart(majorStats, totalMajorLoans) {
+      const container = document.getElementById('major-chart-container');
+      if (!container) return;
+
+      const radius = 64;
+      const circumference = 2 * Math.PI * radius; // ≈ 402.12
+
+      // Build donut circle segments
+      const donutCirclesSvg = majorStats.map(m => {
+        const dashLength = ((m.pct / 100) * circumference).toFixed(2);
+        const dashOffset = (-(m.offset / 100) * circumference).toFixed(2);
+
+        return `
+          <circle 
+            cx="100" 
+            cy="100" 
+            r="${radius}" 
+            fill="transparent" 
+            stroke="${m.color}" 
+            stroke-width="26" 
+            stroke-dasharray="${dashLength} ${circumference}" 
+            stroke-dashoffset="${dashOffset}" 
+            transform="rotate(-90 100 100)"
+            class="transition-all duration-300 hover:opacity-80 cursor-pointer">
+            <title>${m.name}: ${m.count} checkouts (${m.pct}%)</title>
+          </circle>
+        `;
+      }).join('');
+
+      container.innerHTML = `
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-6">
+          <!-- Donut Graphic -->
+          <div class="relative shrink-0 w-44 h-44 flex items-center justify-center">
+            <svg viewBox="0 0 200 200" class="w-full h-full">
+              <!-- Background circle track -->
+              <circle cx="100" cy="100" r="${radius}" fill="transparent" stroke="#1e293b" stroke-width="26"/>
+              ${donutCirclesSvg}
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span class="text-2xl font-bold font-tech text-slate-100 tracking-tight">${totalMajorLoans}</span>
+              <span class="text-[9px] font-mono text-slate-400 uppercase tracking-widest">DISPATCHES</span>
+            </div>
+          </div>
+
+          <!-- Major Legend & Percentages -->
+          <div class="w-full space-y-2.5 font-mono text-xs">
+            ${majorStats.map(m => `
+              <div class="p-2 rounded bg-slate-950/60 border border-slate-800/80 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${m.color}"></span>
+                  <div>
+                    <div class="font-semibold text-slate-200 text-xs">${m.name}</div>
+                    <div class="text-[10px] text-slate-400">${m.enrolledStudents} Registered Students</div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <span class="font-bold text-slate-100">${m.pct}%</span>
+                  <div class="text-[10px] text-slate-400 font-semibold">${m.count} loans</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // 2.6 Low Stock & Reorder Alert Widget (Live QTY <= 1)
+    function renderLowStockAlerts(lowStockItems) {
+      const badge = document.getElementById('low-stock-count-badge');
+      const container = document.getElementById('low-stock-list-container');
+      const isAdmin = currentUser && currentUser.role === 'ADMIN';
+
+      if (badge) {
+        badge.innerText = `${lowStockItems.length} Critical Items`;
+        if (lowStockItems.length > 0) {
+          badge.className = 'px-2 py-0.5 rounded text-[10px] font-mono bg-rose-950 text-rose-300 border border-rose-800 animate-pulse';
+        } else {
+          badge.className = 'px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-950 text-emerald-300 border border-emerald-800';
+        }
+      }
+
+      if (!container) return;
+
+      if (!lowStockItems || lowStockItems.length === 0) {
+        container.innerHTML = `
+          <div class="p-6 rounded-lg bg-emerald-950/20 border border-emerald-800/40 text-center space-y-2">
+            <div class="w-9 h-9 rounded-full bg-emerald-900/40 border border-emerald-700/60 text-emerald-400 flex items-center justify-center mx-auto">
+              ✓
+            </div>
+            <div class="text-xs font-bold text-emerald-300 font-tech">Stock Thresholds Satisfied</div>
+            <div class="text-[11px] font-mono text-slate-400">All 33 laboratory inventory assets maintain safe operational inventory levels (Available > 1).</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = lowStockItems.map(item => {
+        const avail = Number(item.availableQty);
+        const total = Number(item.totalQty);
+        const isZero = avail === 0;
+
+        return `
+          <div class="p-2.5 rounded-lg ${isZero ? 'bg-rose-950/40 border-rose-800/70' : 'bg-amber-950/30 border-amber-800/60'} border flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full ${isZero ? 'bg-rose-500 animate-ping' : 'bg-amber-400'} shrink-0"></span>
+                <span class="text-xs font-semibold text-slate-200 truncate">${item.name}</span>
+              </div>
+              <div class="flex items-center gap-2 text-[10px] font-mono text-slate-400 mt-1">
+                <span>${item.serialId}</span>
+                <span>·</span>
+                <span class="text-indigo-400">${item.location}</span>
+                <span>·</span>
+                <span class="${isZero ? 'text-rose-400 font-bold' : 'text-amber-400 font-bold'}">
+                  ${isZero ? 'OUT OF STOCK (0/' + total + ')' : 'CRITICAL STOCK (1/' + total + ')'}
+                </span>
+              </div>
+            </div>
+
+            <div class="shrink-0 flex items-center gap-2">
+              ${isAdmin ? `
+                <button 
+                  onclick="restockItemQuick('${item.itemId}')" 
+                  title="Admin Quick Restock +2 Units" 
+                  class="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-mono text-[11px] font-semibold transition-colors flex items-center gap-1 shadow-sm">
+                  <span>+2</span>
+                  <span>Restock</span>
+                </button>
+              ` : `
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-900 text-slate-400 border border-slate-800">
+                  Staff Alerted
+                </span>
+              `}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 2.7 Overdue Risk Monitor Card & 1-Click Line Dispatch
+    function renderOverdueRiskMonitor(overdueLoans) {
+      const badge = document.getElementById('overdue-badge-count');
+      const container = document.getElementById('overdue-table-container');
+      const isAdmin = currentUser && currentUser.role === 'ADMIN';
+
+      if (badge) {
+        badge.innerText = `${overdueLoans.length} Active Overdue`;
+        if (overdueLoans.length > 0) {
+          badge.className = 'px-2 py-0.5 rounded text-[10px] font-mono bg-rose-950 text-rose-300 border border-rose-800 animate-pulse';
+        } else {
+          badge.className = 'px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-950 text-emerald-300 border border-emerald-800';
+        }
+      }
+
+      if (!container) return;
+
+      if (!overdueLoans || overdueLoans.length === 0) {
+        container.innerHTML = `
+          <div class="p-6 rounded-lg bg-emerald-950/20 border border-emerald-800/40 text-center space-y-2">
+            <div class="w-9 h-9 rounded-full bg-emerald-900/40 border border-emerald-700/60 text-emerald-400 flex items-center justify-center mx-auto font-mono text-sm">
+              ✓
+            </div>
+            <div class="text-xs font-bold text-emerald-300 font-tech">Zero Overdue Records</div>
+            <div class="text-[11px] font-mono text-slate-400">All loaned laboratory hardware has been returned on schedule. Zero active student penalty flags.</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = `
+        <table class="w-full text-left font-mono text-xs">
+          <thead>
+            <tr class="border-b border-slate-800 text-[10px] text-slate-400 uppercase tracking-wider bg-slate-950/80">
+              <th class="py-2.5 px-3">Student Borrower</th>
+              <th class="py-2.5 px-3">Equipment / Serial</th>
+              <th class="py-2.5 px-3">Due Date / Overdue</th>
+              <th class="py-2.5 px-3 text-right">Instant Dispatch Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/70">
+            ${overdueLoans.map(loan => `
+              <tr class="hover:bg-slate-800/40 transition-colors">
+                <td class="py-2.5 px-3">
+                  <div class="font-bold text-slate-200 text-xs">${loan.studentName}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">ID: ${loan.studentId} · Batch ${loan.batch}</div>
+                  <div class="text-[10px] text-indigo-400">${loan.major}</div>
+                </td>
+                <td class="py-2.5 px-3">
+                  <div class="text-slate-200 font-sans font-medium text-xs">${loan.itemName}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">${loan.serialId}</div>
+                  <div class="text-[10px] text-slate-400 italic">Purpose: ${loan.purpose || 'Lab Research'}</div>
+                </td>
+                <td class="py-2.5 px-3">
+                  <div class="text-slate-300 text-xs">${loan.dueDate}</div>
+                  <span class="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-950 text-rose-300 border border-rose-800">
+                    <span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping"></span>
+                    +${loan.daysOverdue} Days Overdue
+                  </span>
+                </td>
+                <td class="py-2.5 px-3 text-right space-y-1">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button 
+                      onclick="copyLineIdForRecall('${loan.lineId}', '${loan.studentName}', '${loan.itemName}')" 
+                      title="Copy Line ID for instant reminder"
+                      class="px-2.5 py-1 rounded bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-700/60 text-emerald-300 text-[11px] font-mono font-semibold transition-colors flex items-center gap-1.5 ml-auto">
+                      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.03 2 11c0 2.87 1.51 5.43 3.86 7.07-.15.53-.55 1.94-.63 2.23-.1.35.13.35.28.25.12-.08 1.93-1.31 2.71-1.84.56.08 1.15.13 1.78.13 5.52 0 10-4.03 10-9s-4.48-9-10-9z"/></svg>
+                      <span>Line: ${loan.lineId}</span>
+                    </button>
+
+                    ${isAdmin ? `
+                      <button 
+                        onclick="returnOverdueItemQuick('${loan.loanId}')" 
+                        title="Mark equipment returned and clear overdue flag" 
+                        class="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-mono font-semibold transition-colors">
+                        Mark Return
+                      </button>
+                    ` : ''}
+                  </div>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    // 2.8 Facility Location Asset Allocation Chart
+    function renderLocationAllocation(locationStats) {
+      const container = document.getElementById('location-allocation-container');
+      if (!container) return;
+
+      container.innerHTML = locationStats.map(loc => {
+        let badgeBg = 'bg-indigo-950 text-indigo-300 border-indigo-800';
+        if (loc.code === 'HE3') badgeBg = 'bg-cyan-950 text-cyan-300 border-cyan-800';
+        if (loc.code === 'RCL') badgeBg = 'bg-emerald-950 text-emerald-300 border-emerald-800';
+
+        return `
+          <div class="p-3 rounded-lg bg-slate-950/60 border border-slate-800/80 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${badgeBg}">
+                  ${loc.code}
+                </span>
+                <span class="font-semibold text-slate-200 text-xs">${loc.name}</span>
+              </div>
+              <span class="font-mono text-[11px] font-bold text-slate-100">${loc.totalUnits} <span class="text-[10px] text-slate-400 font-normal">units</span></span>
+            </div>
+
+            <p class="text-[11px] text-slate-400 font-mono leading-relaxed">
+              ${loc.desc}
+            </p>
+
+            <div class="space-y-1">
+              <div class="flex items-center justify-between font-mono text-[10px] text-slate-400">
+                <span>In-use: <strong class="text-amber-300">${loc.loanedUnits}</strong> · Available: <strong class="text-emerald-400">${loc.availUnits}</strong></span>
+                <span>Share: <strong class="text-slate-200">${loc.shareOfLab}% of lab</strong></span>
+              </div>
+              <div class="w-full bg-slate-900 rounded-full h-2 overflow-hidden flex">
+                <div class="bg-indigo-500 h-2 rounded-l-full" style="width: ${loc.utilizationPct}%"></div>
+                <div class="bg-slate-800 h-2 rounded-r-full" style="width: ${100 - loc.utilizationPct}%"></div>
+              </div>
+            </div>
+
+            <div class="pt-1 flex items-center justify-end">
+              <button 
+                onclick="filterInventoryByLocationFromDashboard('${loc.code}')" 
+                class="text-[10px] font-mono text-indigo-400 hover:text-indigo-300 hover:underline flex items-center gap-1">
+                <span>Browse ${loc.code} Inventory</span>
+                <span>&rarr;</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 2.9 Peak Utilization Hourly Profile Insight Card
+    function renderPeakUtilizationTimes(peakHoursStats) {
+      const container = document.getElementById('peak-hours-container');
+      if (!container) return;
+
+      const chartW = 380;
+      const chartH = 130;
+      const baselineY = 95;
+      const barW = 36;
+      const maxCount = 45;
+
+      const barsSvg = peakHoursStats.map((slot, idx) => {
+        const x = 20 + idx * 52;
+        const barH = Math.max(6, Math.round((slot.count / maxCount) * 65));
+        const y = baselineY - barH;
+        const isPeak = slot.isPeak;
+
+        return `
+          <g class="transition-all hover:opacity-90">
+            <!-- Peak Indicator Badge -->
+            ${isPeak ? `
+              <text x="${x + barW / 2}" y="${y - 8}" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" fill="#06b6d4">
+                ★ PEAK (45)
+              </text>
+            ` : `
+              <text x="${x + barW / 2}" y="${y - 4}" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="8" fill="#94a3b8">
+                ${slot.count}
+              </text>
+            `}
+
+            <!-- Bar Shape -->
+            <rect 
+              x="${x}" 
+              y="${y}" 
+              width="${barW}" 
+              height="${barH}" 
+              rx="3" 
+              fill="${isPeak ? '#06b6d4' : '#6366f1'}" 
+              opacity="${isPeak ? '1' : '0.75'}">
+              <title>${slot.hour} - ${slot.label}: ${slot.count} checkouts</title>
+            </rect>
+
+            <!-- Hour Label -->
+            <text x="${x + barW / 2}" y="112" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="semibold" fill="${isPeak ? '#38bdf8' : '#cbd5e1'}">
+              ${slot.hour}
+            </text>
+          </g>
+        `;
+      }).join('');
+
+      container.innerHTML = `
+        <div class="w-full flex items-center justify-center overflow-x-auto pb-1">
+          <svg viewBox="0 0 ${chartW} ${chartH}" class="w-full max-w-sm h-auto select-none">
+            <line x1="15" y1="${baselineY}" x2="365" y2="${baselineY}" stroke="#334155" stroke-width="1.5"/>
+            ${barsSvg}
+          </svg>
+        </div>
+
+        <div class="p-3 rounded-lg bg-slate-950/70 border border-slate-800 text-[11px] font-mono space-y-1.5">
+          <div class="flex items-center gap-1.5 text-cyan-400 font-semibold">
+            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+            <span>Peak Lab Congestion: 13:30 – 16:30</span>
+          </div>
+          <p class="text-slate-400 text-[10px] leading-relaxed">
+            Highest checkout collisions coincide with Senior (B67) & Junior (B68) afternoon capstone project studio slots. Advance reservations are advised for high-demand oscilloscopes & Jetson Orin kits.
+          </p>
+        </div>
+      `;
+    }
+
+    // 2.10 Recent Activity Audit Timeline
+    function renderActivityTimeline(activities) {
+      const container = document.getElementById('activity-feed-container');
+      if (!container) return;
+
+      if (!activities || activities.length === 0) {
+        container.innerHTML = '<div class="p-6 text-center text-xs font-mono text-slate-500">No activity events recorded yet.</div>';
+        return;
+      }
+
+      container.innerHTML = activities.slice(0, 10).map((act, index) => {
+        let dotColor = 'bg-indigo-400';
+        let badgeBorder = 'border-indigo-800 text-indigo-300 bg-indigo-950/80';
+        if (act.type === 'RETURN') {
+          dotColor = 'bg-emerald-400';
+          badgeBorder = 'border-emerald-800 text-emerald-300 bg-emerald-950/80';
+        } else if (act.type === 'OVERDUE') {
+          dotColor = 'bg-rose-400';
+          badgeBorder = 'border-rose-800 text-rose-300 bg-rose-950/80';
+        } else if (act.type === 'STOCK' || act.type === 'RESTOCK') {
+          dotColor = 'bg-amber-400';
+          badgeBorder = 'border-amber-800 text-amber-300 bg-amber-950/80';
+        } else if (act.type === 'USER') {
+          dotColor = 'bg-purple-400';
+          badgeBorder = 'border-purple-800 text-purple-300 bg-purple-950/80';
+        }
+
+        return `
+          <div class="relative pl-5 pb-3.5 border-l border-slate-800 last:border-transparent last:pb-0 font-mono">
+            <!-- Timeline Dot -->
+            <span class="absolute -left-1.5 top-1 w-3 h-3 rounded-full border-2 border-[#0c1222] ${dotColor}"></span>
+            
+            <div class="flex items-center justify-between text-[10px] mb-1">
+              <span class="px-1.5 py-0.5 rounded uppercase font-bold border ${badgeBorder}">
+                ${act.type}
+              </span>
+              <span class="text-slate-400">${act.timestamp}</span>
+            </div>
+
+            <div class="text-xs font-semibold text-slate-200">${act.title}</div>
+            <div class="text-[11px] text-slate-400 mt-0.5 leading-snug font-sans">${act.desc}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // -------------------------------------------------------------------------
+    // 3. MASTER DASHBOARD TELEMETRY COORDINATOR
+    // -------------------------------------------------------------------------
+    function renderDashboardAnalytics() {
+      // 1. Pure math computations
+      const stats = computeLabAnalytics(appInventory, appLoans, appUsers);
+
+      // 2. Render all 10 visual analytical modules
+      renderKpiCards(stats.kpi);
+      renderTopBorrowedLeaderboard(stats.topBorrowed, stats.maxBorrowCount);
+      renderCategoryBreakdown(stats.categoryStats, stats.kpi.totalUnits);
+      renderBatchUtilizationChart(stats.batchStats, stats.maxBatchCount);
+      renderMajorDistributionChart(stats.majorStats, stats.totalMajorLoans);
+      renderLowStockAlerts(stats.lowStockItems);
+      renderOverdueRiskMonitor(stats.overdueLoans);
+      renderLocationAllocation(stats.locationStats);
+      renderPeakUtilizationTimes(stats.peakHoursStats);
+      renderActivityTimeline(appActivities);
+    }
+
+    // Interactive Refresh Button Handler
+    function updateDashboardAnalytics() {
+      renderDashboardAnalytics();
+      showToast('Dashboard Telemetry refreshed! All 10 analytics cards updated.', 'success');
+    }
+
+    // -------------------------------------------------------------------------
+    // 4. INTERACTIVE DASHBOARD SHORTCUT ACTIONS
+    // -------------------------------------------------------------------------
+
+    // Admin Quick Restock Action from Low Stock Card (+2 Units)
+    function restockItemQuick(itemId) {
+      if (!currentUser || currentUser.role !== 'ADMIN') {
+        showToast('Admin privileges required to restock equipment.', 'error');
+        return;
+      }
+
+      const item = appInventory.find(it => it.itemId === itemId);
+      if (!item) return;
+
+      item.availableQty = Number(item.availableQty) + 2;
+      item.totalQty = Number(item.totalQty) + 2;
+
+      addActivity(
+        'RESTOCK',
+        'Quick Restock Executed',
+        `Admin Dr. Thanapat added +2 units to ${item.name} (${item.serialId}). Available: ${item.availableQty}/${item.totalQty}.`,
+        'amber'
+      );
+
+      saveInventory();
+      showToast(`Restocked +2 units of "${item.name}"! Now ${item.availableQty}/${item.totalQty} in stock.`, 'success');
+      handleInventoryFilterChange();
+    }
+
+    // Quick Return Action from Overdue Table
+    function returnOverdueItemQuick(loanId) {
+      if (!currentUser || currentUser.role !== 'ADMIN') {
+        showToast('Admin privileges required to process hardware returns.', 'error');
+        return;
+      }
+
+      const loan = appLoans.find(l => l.loanId === loanId);
+      if (!loan) return;
+
+      loan.status = 'RETURNED';
+      loan.daysOverdue = 0;
+
+      // Restock inventory item
+      const item = appInventory.find(it => it.itemId === loan.itemId || it.serialId === loan.serialId);
+      if (item) {
+        if (Number(item.availableQty) < Number(item.totalQty)) {
+          item.availableQty = Number(item.availableQty) + 1;
+        }
+      }
+
+      addActivity(
+        'RETURN',
+        'Overdue Equipment Returned',
+        `${loan.studentName} (Batch ${loan.batch}) completed return for ${loan.itemName} (${loan.serialId}).`,
+        'emerald'
+      );
+
+      saveLoans();
+      saveInventory();
+      showToast(`Marked "${loan.itemName}" returned from ${loan.studentName}! Available stock updated.`, 'success');
+      handleInventoryFilterChange();
+    }
+
+    // 1-Click Line ID Copy for Student Recall Notice
+    function copyLineIdForRecall(lineId, studentName, itemName) {
+      navigator.clipboard.writeText(lineId).then(() => {
+        showToast(`Copied Line ID "${lineId}" for ${studentName} (${itemName} recall notification).`, 'success');
+      }).catch(() => {
+        showToast(`Line ID: ${lineId}`, 'info');
+      });
+    }
+
+    // Filter Inventory by Category directly from Dashboard Breakdown click
+    function filterInventoryByCategoryFromDashboard(category) {
+      switchTab('inventory');
+      const catFilter = document.getElementById('inv-filter-category');
+      if (catFilter) {
+        catFilter.value = category;
+      }
+      handleInventoryFilterChange();
+      showToast(`Filtered catalog to show all ${category} equipment.`, 'info');
+    }
+
+    // Filter Inventory by Location directly from Dashboard Allocation click
+    function filterInventoryByLocationFromDashboard(locationCode) {
+      switchTab('inventory');
+      const locFilter = document.getElementById('inv-filter-location');
+      if (locFilter) {
+        locFilter.value = locationCode;
+      }
+      handleInventoryFilterChange();
+      showToast(`Filtered catalog to show equipment at ${locationCode}.`, 'info');
+    }
+
+    // =========================================================================
     // 15. Setup on DOM Ready
+    // =========================================================================
     window.addEventListener('DOMContentLoaded', () => {
       initUsers();
       initSession();
       initInventory();
+      initLoans();
+      initActivities();
       applyRolePermissions();
       renderAuthHeader();
       renderStudentDirectory();
+      renderDashboardAnalytics();
 
       const toggleBtn = document.getElementById('btn-toggle-drawer');
       if (toggleBtn) {
