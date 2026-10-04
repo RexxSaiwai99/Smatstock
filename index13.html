@@ -636,43 +636,443 @@
         <!-- VIEW 2: BORROW & RETURN DESK TAB VIEW                                 -->
         <!-- ===================================================================== -->
         <section id="view-borrow" class="tab-view space-y-6">
+          
+          <!-- Top Header & Dispatch Controls -->
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
             <div>
               <div class="flex items-center gap-2">
                 <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-100 font-tech">
                   BORROW & RETURN DESK
                 </h1>
-                <span class="font-mono text-xs text-indigo-400 bg-indigo-950/80 px-2 py-0.5 rounded border border-indigo-800/60">
-                  DISPATCH TERMINAL
+                <span class="font-mono text-xs text-indigo-400 bg-indigo-950/80 px-2 py-0.5 rounded border border-indigo-800/60 flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-ping"></span>
+                  M4 DISPATCH TERMINAL
                 </span>
               </div>
               <p class="text-xs text-slate-400 mt-1 font-mono">
-                Hardware checkout station, due date calculator, and return condition inspection portal.
+                Hardware checkout dispatch, live inventory deduction, due date calculator, and condition inspection desk.
               </p>
+            </div>
+
+            <!-- Workflow Sub-Tab Switcher Buttons -->
+            <div class="flex items-center gap-2 bg-slate-900/90 border border-slate-800 rounded-lg p-1 shrink-0 text-xs font-mono">
+              <button 
+                id="btn-subtab-checkout" 
+                onclick="switchBorrowDeskTab('checkout')" 
+                class="px-3 py-1.5 rounded-md font-semibold bg-indigo-600 text-white shadow-sm transition-all flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                <span>New Checkout</span>
+              </button>
+              <button 
+                id="btn-subtab-returns" 
+                onclick="switchBorrowDeskTab('returns')" 
+                class="px-3 py-1.5 rounded-md font-semibold text-slate-400 hover:text-slate-200 transition-all flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                <span>Active Loans</span>
+                <span id="badge-active-loans-count" class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-800 text-cyan-300 font-bold">0</span>
+              </button>
+              <button 
+                id="btn-subtab-history" 
+                onclick="switchBorrowDeskTab('history')" 
+                class="px-3 py-1.5 rounded-md font-semibold text-slate-400 hover:text-slate-200 transition-all flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>Return Audit</span>
+              </button>
             </div>
           </div>
 
-          <div class="rounded-xl border border-slate-800 bg-slate-900/70 p-8 text-center max-w-2xl mx-auto space-y-4 shadow-xl">
-            <div class="w-14 h-14 rounded-2xl bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 mx-auto">
-              <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-              </svg>
-            </div>
-            <div>
-              <h3 class="text-base font-bold text-slate-100 font-tech">Borrow & Return Desk Scaffold Active</h3>
-              <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">
-                Currently authenticated as <strong id="borrow-desk-user" class="text-indigo-300 font-mono">Dr. Thanapat (ADMIN)</strong>. In Milestones M4 & M5, borrower credentials will auto-populate with the authenticated student's profile (Name, ID, Batch, Major, Line ID) for 1-click checkouts and returns.
-              </p>
-            </div>
-            <div class="pt-2 flex items-center justify-center gap-3">
-              <button onclick="switchTab('inventory')" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition-colors">
-                Browse Inventory
-              </button>
-              <button onclick="switchTab('dashboard')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold transition-colors">
-                Back to Dashboard
-              </button>
+          <!-- =================================================================== -->
+          <!-- SUB-VIEW A: NEW CHECKOUT / BORROW WORKFLOW                          -->
+          <!-- =================================================================== -->
+          <div id="borrow-subview-checkout" class="space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+              <!-- Left Column: Checkout Application Form (7 Cols) -->
+              <div class="lg:col-span-7 rounded-xl border border-slate-800 bg-slate-900/90 shadow-xl p-5 space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-indigo-400"></span>
+                    <h2 class="text-sm font-bold text-slate-100 font-tech uppercase tracking-wide">
+                      Equipment Borrow Application
+                    </h2>
+                  </div>
+                  <span class="text-[11px] font-mono text-indigo-400">Step 1 of 2 · Dispatch Specification</span>
+                </div>
+
+                <form id="borrow-checkout-form" onsubmit="handleBorrowSubmit(event)" class="space-y-4 text-xs font-mono">
+                  
+                  <!-- 1. Equipment Selection & Category Filter -->
+                  <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                      <label class="block text-slate-300 font-bold">1. SELECT HARDWARE ASSET *</label>
+                      <span id="borrow-live-stock-text" class="text-[11px] text-emerald-400 font-semibold">Live inventory connected</span>
+                    </div>
+
+                    <!-- Category Pills Quick Filter -->
+                    <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-[10px]">
+                      <button type="button" onclick="filterBorrowItemsByCategory('ALL')" class="btn-borrow-cat-filter px-2 py-0.5 rounded bg-indigo-600 text-white font-semibold shrink-0" data-cat="ALL">All Categories</button>
+                      <button type="button" onclick="filterBorrowItemsByCategory('Laptop')" class="btn-borrow-cat-filter px-2 py-0.5 rounded bg-slate-800 text-slate-400 hover:text-white shrink-0" data-cat="Laptop">Laptop</button>
+                      <button type="button" onclick="filterBorrowItemsByCategory('Microcontroller')" class="btn-borrow-cat-filter px-2 py-0.5 rounded bg-slate-800 text-slate-400 hover:text-white shrink-0" data-cat="Microcontroller">Microcontroller</button>
+                      <button type="button" onclick="filterBorrowItemsByCategory('Sensor')" class="btn-borrow-cat-filter px-2 py-0.5 rounded bg-slate-800 text-slate-400 hover:text-white shrink-0" data-cat="Sensor">Sensor</button>
+                      <button type="button" onclick="filterBorrowItemsByCategory('Tool')" class="btn-borrow-cat-filter px-2 py-0.5 rounded bg-slate-800 text-slate-400 hover:text-white shrink-0" data-cat="Tool">Tool</button>
+                      <button type="button" onclick="filterBorrowItemsByCategory('Projector')" class="btn-borrow-cat-filter px-2 py-0.5 rounded bg-slate-800 text-slate-400 hover:text-white shrink-0" data-cat="Projector">Projector</button>
+                      <button type="button" onclick="filterBorrowItemsByCategory('Tripod')" class="btn-borrow-cat-filter px-2 py-0.5 rounded bg-slate-800 text-slate-400 hover:text-white shrink-0" data-cat="Tripod">Tripod</button>
+                    </div>
+
+                    <!-- Item Dropdown -->
+                    <select 
+                      id="borrow-item-select" 
+                      onchange="handleBorrowItemSelectionChange()" 
+                      required 
+                      class="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-3.5 py-2.5 text-slate-100 focus:outline-none focus:border-indigo-500 cursor-pointer">
+                      <!-- Populated dynamically by JavaScript -->
+                    </select>
+                  </div>
+
+                  <!-- Equipment Live Stock & Specs Preview Card -->
+                  <div id="borrow-item-preview" class="p-3.5 rounded-lg bg-slate-950/70 border border-slate-800 transition-all">
+                    <!-- Populated dynamically by handleBorrowItemSelectionChange -->
+                  </div>
+
+                  <!-- 2. Borrower Information (Auto-Filled from Session / Admin Student Picker) -->
+                  <div class="space-y-2 pt-2 border-t border-slate-800/80">
+                    <div class="flex items-center justify-between">
+                      <label class="block text-slate-300 font-bold">2. BORROWER CREDENTIALS (AUTO-POPULATED) *</label>
+                      <span id="borrow-auth-indicator" class="text-[10px] text-indigo-400 flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                        Verified Session Profile
+                      </span>
+                    </div>
+
+                    <!-- Admin On-Behalf Picker (Visible only for ADMIN) -->
+                    <div id="admin-borrow-student-picker" class="hidden p-2.5 rounded-lg bg-indigo-950/30 border border-indigo-800/50 space-y-1.5">
+                      <div class="flex items-center justify-between text-[11px]">
+                        <span class="text-indigo-300 font-bold">Admin Dispatch On-Behalf:</span>
+                        <span class="text-slate-400 text-[10px]">Select student profile from directory</span>
+                      </div>
+                      <select 
+                        id="borrow-student-select" 
+                        onchange="handleAdminStudentSelectChange()" 
+                        class="w-full bg-slate-950 border border-indigo-700/60 rounded px-2.5 py-1.5 text-slate-100 text-xs focus:outline-none focus:border-indigo-400 cursor-pointer">
+                        <!-- Populated by JavaScript with students -->
+                      </select>
+                    </div>
+
+                    <!-- Auto-Filled Student Detail Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
+                      <div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800 flex flex-col justify-between">
+                        <span class="text-[10px] text-slate-400">Student Name</span>
+                        <span id="borrow-field-name" class="font-bold text-slate-100 text-xs mt-0.5 truncate">-</span>
+                        <span id="borrow-field-id" class="text-[10px] text-indigo-400 font-semibold mt-0.5">ID: -</span>
+                      </div>
+
+                      <div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800 flex flex-col justify-between">
+                        <span class="text-[10px] text-slate-400">Degree Major & Batch</span>
+                        <span id="borrow-field-major" class="font-bold text-slate-100 text-xs mt-0.5 truncate">-</span>
+                        <span id="borrow-field-batch" class="text-[10px] text-slate-400 mt-0.5">Batch: -</span>
+                      </div>
+
+                      <div class="col-span-1 sm:col-span-2 p-2.5 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between">
+                        <div>
+                          <div class="text-[10px] text-slate-400">Line Messaging Contact (Automated Due Notice)</div>
+                          <div id="borrow-field-line" class="font-bold text-emerald-400 text-xs mt-0.5">Line ID: -</div>
+                        </div>
+                        <span class="px-2 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-800">
+                          Verified Line Account
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 3. Loan Parameters: Requested Quantity & Return Date -->
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-800/80">
+                    <div>
+                      <div class="flex items-center justify-between mb-1">
+                        <label class="block text-slate-300 font-bold">3. QUANTITY TO BORROW *</label>
+                        <span id="borrow-max-qty-label" class="text-[10px] text-slate-400 font-mono">Max: 1</span>
+                      </div>
+                      <input 
+                        type="number" 
+                        id="borrow-qty" 
+                        min="1" 
+                        max="1" 
+                        value="1" 
+                        required 
+                        oninput="handleBorrowQtyInput()" 
+                        class="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-3.5 py-2 text-slate-100 text-xs focus:outline-none focus:border-indigo-500 font-mono"
+                      />
+                    </div>
+
+                    <div>
+                      <div class="flex items-center justify-between mb-1">
+                        <label class="block text-slate-300 font-bold">4. EXPECTED RETURN DATE *</label>
+                        <span class="text-[10px] text-cyan-400 font-mono">Standard Max: 7 Days</span>
+                      </div>
+                      <input 
+                        type="date" 
+                        id="borrow-due-date" 
+                        required 
+                        onchange="handleDueDateChange()" 
+                        class="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-3.5 py-2 text-slate-100 text-xs focus:outline-none focus:border-indigo-500 font-mono cursor-pointer"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Quick Due Date Presets -->
+                  <div class="flex items-center gap-2 text-[10px] font-mono">
+                    <span class="text-slate-400">Duration Presets:</span>
+                    <button type="button" onclick="setBorrowDurationPreset(3)" id="preset-btn-3" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors">+3 Days (Lab Practical)</button>
+                    <button type="button" onclick="setBorrowDurationPreset(7)" id="preset-btn-7" class="px-2 py-0.5 rounded bg-indigo-600 text-white font-semibold transition-colors">+7 Days (Standard Policy)</button>
+                    <button type="button" onclick="setBorrowDurationPreset(14)" id="preset-btn-14" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors">+14 Days (Capstone Sprint)</button>
+                  </div>
+
+                  <!-- 4. Usage Note / Academic Research Purpose -->
+                  <div class="space-y-1 pt-1">
+                    <label class="block text-slate-300 font-bold">5. USAGE NOTE & LAB RESEARCH PURPOSE *</label>
+                    <textarea 
+                      id="borrow-purpose" 
+                      required 
+                      rows="2" 
+                      placeholder="e.g. Senior Capstone ROS2 Gazebo SLAM Testing, BLDC Motor Driver Debugging, or Computer Vision dataset collection..." 
+                      class="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-3.5 py-2 text-slate-100 placeholder-slate-500 text-xs focus:outline-none focus:border-indigo-500 font-mono resize-none"></textarea>
+                    
+                    <!-- Purpose Quick Suggestions -->
+                    <div class="flex items-center gap-1.5 overflow-x-auto text-[9.5px] text-slate-400 pt-0.5">
+                      <span class="shrink-0 text-slate-500">Quick inserts:</span>
+                      <button type="button" onclick="fillBorrowPurpose('Senior Capstone ROS2 Gazebo SLAM Testing')" class="px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800 hover:border-slate-600 text-slate-300 shrink-0">ROS2 SLAM</button>
+                      <button type="button" onclick="fillBorrowPurpose('Deep Learning TensorRT Edge AI Inference Benchmark')" class="px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800 hover:border-slate-600 text-slate-300 shrink-0">TensorRT AI</button>
+                      <button type="button" onclick="fillBorrowPurpose('Power Electronics Inverter PWM Oscilloscope Debug')" class="px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800 hover:border-slate-600 text-slate-300 shrink-0">PWM Debug</button>
+                      <button type="button" onclick="fillBorrowPurpose('Autonomous Mobile Robot LiDAR & Depth Rig Calibration')" class="px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800 hover:border-slate-600 text-slate-300 shrink-0">LiDAR Rig</button>
+                    </div>
+                  </div>
+
+                  <!-- Submit Dispatch Button -->
+                  <div class="pt-2">
+                    <button 
+                      type="submit" 
+                      id="btn-submit-borrow" 
+                      class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-500 disabled:cursor-not-allowed text-white rounded-lg font-sans font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                      <span>Authorize Loan & Deduct Inventory Stock</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Right Column: Live Dispatch Telemetry & Policy Matrix (5 Cols) -->
+              <div class="lg:col-span-5 space-y-4">
+                
+                <!-- Live Transaction Preview Pill Box -->
+                <div class="rounded-xl border border-indigo-900/40 bg-gradient-to-br from-slate-900/90 via-slate-900/80 to-indigo-950/30 p-5 shadow-xl space-y-3">
+                  <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
+                    <div class="flex items-center gap-2">
+                      <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+                      <span class="text-xs font-bold text-slate-100 font-tech uppercase tracking-wide">
+                        Real-Time Loan Calculation
+                      </span>
+                    </div>
+                    <span class="text-[10px] font-mono text-cyan-300 bg-cyan-950/60 px-1.5 py-0.5 rounded border border-cyan-800/40">
+                      LIVE AUDIT
+                    </span>
+                  </div>
+
+                  <div class="space-y-2.5 font-mono text-xs">
+                    <div class="flex items-center justify-between p-2 rounded bg-slate-950/70 border border-slate-800">
+                      <span class="text-slate-400">Selected Asset</span>
+                      <span id="summary-item-name" class="font-bold text-slate-200 text-right truncate max-w-[180px]">Loading...</span>
+                    </div>
+
+                    <div class="flex items-center justify-between p-2 rounded bg-slate-950/70 border border-slate-800">
+                      <span class="text-slate-400">Dispatched Borrower</span>
+                      <span id="summary-borrower-name" class="font-bold text-indigo-300 text-right truncate max-w-[180px]">-</span>
+                    </div>
+
+                    <div class="flex items-center justify-between p-2 rounded bg-slate-950/70 border border-slate-800">
+                      <span class="text-slate-400">Quantity</span>
+                      <span id="summary-qty" class="font-bold text-emerald-400">1 unit</span>
+                    </div>
+
+                    <div class="flex items-center justify-between p-2 rounded bg-slate-950/70 border border-slate-800">
+                      <span class="text-slate-400">Return Schedule</span>
+                      <span id="summary-due-date" class="font-bold text-cyan-300">- (7 days)</span>
+                    </div>
+
+                    <div class="flex items-center justify-between p-2 rounded bg-slate-950/70 border border-slate-800">
+                      <span class="text-slate-400">Designated Return Bay</span>
+                      <span id="summary-location" class="font-bold text-slate-200">HA1 / HE3</span>
+                    </div>
+                  </div>
+
+                  <div class="pt-2 text-[11px] font-mono text-slate-400 leading-relaxed border-t border-slate-800/80">
+                    Upon submission, inventory stock for this item will immediately decrease by requested units, and the transaction is entered into the master loans database.
+                  </div>
+                </div>
+
+                <!-- Laboratory Equipment Policies Card -->
+                <div class="rounded-xl border border-slate-800 bg-slate-900/90 p-5 shadow-xl space-y-3 font-mono text-xs">
+                  <div class="flex items-center gap-2 border-b border-slate-800 pb-2.5">
+                    <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                    <span class="font-bold text-slate-100 font-tech uppercase tracking-wide">
+                      Borrowing Protocols & Policy
+                    </span>
+                  </div>
+
+                  <ul class="space-y-2 text-[11px] text-slate-400 leading-relaxed">
+                    <li class="flex items-start gap-2">
+                      <span class="text-indigo-400 font-bold shrink-0">01.</span>
+                      <span>Maximum loan window is <strong>7 calendar days</strong>. Extensions require faculty signature.</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <span class="text-indigo-400 font-bold shrink-0">02.</span>
+                      <span>Items must be returned with all power adapters, probes, cables, and storage cases.</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <span class="text-indigo-400 font-bold shrink-0">03.</span>
+                      <span>Overdue notices are automatically transmitted to the student's registered <strong>Line ID</strong>.</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <span class="text-indigo-400 font-bold shrink-0">04.</span>
+                      <span>Inspection condition is evaluated upon return: <strong>Good</strong>, <strong>Damaged</strong>, or <strong>Lost</strong>.</span>
+                    </li>
+                  </ul>
+
+                  <div class="pt-2 border-t border-slate-800/80">
+                    <button 
+                      type="button" 
+                      onclick="switchBorrowDeskTab('returns')" 
+                      class="w-full py-2 px-3 rounded-lg bg-slate-950 border border-slate-800 hover:border-indigo-500 text-indigo-400 hover:text-indigo-300 transition-colors flex items-center justify-between text-xs font-semibold">
+                      <span>View Active Checkouts & Returns</span>
+                      <span>&rarr;</span>
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+
             </div>
           </div>
+
+          <!-- =================================================================== -->
+          <!-- SUB-VIEW B: ACTIVE LOANS & RETURN DESK                              -->
+          <!-- =================================================================== -->
+          <div id="borrow-subview-returns" class="hidden space-y-4">
+            
+            <!-- Controls Bar: Filter & Search for Active Loans -->
+            <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/90 shadow-xl space-y-3">
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                
+                <!-- Search Input -->
+                <div class="relative flex-1">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  </div>
+                  <input 
+                    type="text" 
+                    id="returns-search-input" 
+                    oninput="handleReturnsFilterChange()" 
+                    placeholder="Search active loans by item name, serial ID, or student..." 
+                    class="w-full bg-slate-950 border border-slate-700/80 rounded-lg pl-9 pr-3 py-2 text-xs text-slate-100 placeholder-slate-500 font-mono focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+
+                <!-- Admin Student Filter (Admin only) -->
+                <div id="admin-returns-filter-box" class="shrink-0 flex items-center gap-2">
+                  <select 
+                    id="returns-student-filter" 
+                    onchange="handleReturnsFilterChange()" 
+                    class="bg-slate-950 border border-slate-700/80 rounded-lg px-3 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer">
+                    <option value="ALL">All Active Borrowers (Admin View)</option>
+                    <!-- Populated dynamically with students -->
+                  </select>
+                </div>
+
+                <!-- Status Filter Dropdown -->
+                <div class="shrink-0">
+                  <select 
+                    id="returns-status-filter" 
+                    onchange="handleReturnsFilterChange()" 
+                    class="bg-slate-950 border border-slate-700/80 rounded-lg px-3 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer">
+                    <option value="ALL">All Active Loans</option>
+                    <option value="OVERDUE">Overdue Items Only</option>
+                    <option value="ACTIVE">On-Schedule Items</option>
+                  </select>
+                </div>
+
+              </div>
+
+              <!-- Context Banner -->
+              <div class="flex items-center justify-between text-[11px] font-mono text-slate-400 pt-2 border-t border-slate-800">
+                <div id="returns-list-summary">Loading active checkouts...</div>
+                <div class="flex items-center gap-3">
+                  <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> Active On-Schedule</span>
+                  <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-rose-400 animate-pulse"></span> Overdue (Past Deadline)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Active Loans Cards Grid Container -->
+            <div id="active-loans-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <!-- Populated dynamically by renderActiveLoans -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="returns-empty-state" class="hidden rounded-xl border border-dashed border-slate-800 bg-slate-900/40 p-12 text-center max-w-md mx-auto space-y-3 font-mono text-xs">
+              <div class="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center text-slate-400 mx-auto text-lg">
+                ✓
+              </div>
+              <div class="text-slate-200 font-bold">No active loans found</div>
+              <p class="text-slate-400 text-[11px] leading-relaxed">
+                There are no active equipment borrowings matching the selected borrower or filter criteria. All equipment has been safely returned.
+              </p>
+              <button onclick="switchBorrowDeskTab('checkout')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-xs font-semibold">
+                Start New Checkout
+              </button>
+            </div>
+
+          </div>
+
+          <!-- =================================================================== -->
+          <!-- SUB-VIEW C: RETURN AUDIT & CONDITION LOG                            -->
+          <!-- =================================================================== -->
+          <div id="borrow-subview-history" class="hidden space-y-4">
+            
+            <div class="rounded-xl border border-slate-800 bg-slate-900/90 shadow-xl overflow-hidden">
+              <div class="p-4 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h2 class="text-sm font-bold text-slate-100 uppercase tracking-wide font-tech">
+                    Completed Returns & Condition Inspection Log
+                  </h2>
+                  <p class="text-xs text-slate-400 font-mono">
+                    Historical record of checked-in equipment with physical condition ratings and restock verifications.
+                  </p>
+                </div>
+                <span id="history-count-badge" class="text-xs font-mono text-emerald-400 bg-emerald-950/80 px-2.5 py-1 rounded border border-emerald-800/60 self-start sm:self-center">
+                  0 Records Logged
+                </span>
+              </div>
+
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs font-mono">
+                  <thead>
+                    <tr class="border-b border-slate-800 text-slate-400 bg-slate-950/70 text-[11px]">
+                      <th class="p-3 font-normal">LOAN ID</th>
+                      <th class="p-3 font-normal">EQUIPMENT & SERIAL</th>
+                      <th class="p-3 font-normal">BORROWER</th>
+                      <th class="p-3 font-normal">DATES (OUT / IN)</th>
+                      <th class="p-3 font-normal">CONDITION AT RETURN</th>
+                      <th class="p-3 font-normal">INSPECTION REMARKS</th>
+                      <th class="p-3 font-normal text-right">STATUS</th>
+                    </tr>
+                  </thead>
+                  <tbody id="return-history-tbody" class="divide-y divide-slate-800/80">
+                    <!-- Populated dynamically by renderReturnHistory -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+
         </section>
 
         <!-- ===================================================================== -->
@@ -1227,6 +1627,106 @@
         <div class="pt-2 flex items-center justify-end gap-2 font-sans">
           <button type="button" onclick="closeAddItemModal()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded text-xs font-semibold">Cancel</button>
           <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-xs font-semibold">Save Equipment</button>
+        </div>
+      </form>
+    </div>
+  <!-- Return Item Modal (Condition Check & Inspection Workflow) -->
+  <div id="return-item-modal" class="modal-backdrop">
+    <div class="w-full max-w-lg rounded-2xl border border-slate-800 bg-[#0c1222] shadow-2xl overflow-hidden backdrop-blur-md">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-slate-800 bg-slate-950/70 px-6 py-4">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+          <div>
+            <h3 class="text-sm font-bold text-slate-100 font-tech">Hardware Return & Condition Inspection</h3>
+            <p class="text-[11px] font-mono text-emerald-400">Inventory Restocking Workflow</p>
+          </div>
+        </div>
+        <button onclick="closeReturnModal()" class="text-slate-400 hover:text-white font-mono text-sm">✕</button>
+      </div>
+
+      <!-- Return Form -->
+      <form id="return-item-form" onsubmit="handleReturnModalSubmit(event)" class="p-6 space-y-4 font-mono text-xs">
+        <input type="hidden" id="return-modal-loan-id" value="" />
+
+        <!-- Loan Summary Details Card -->
+        <div id="return-modal-summary" class="p-3 rounded-lg bg-slate-950/80 border border-slate-800 space-y-2">
+          <!-- Dynamically populated by openReturnModal -->
+        </div>
+
+        <!-- Condition Check Radio Options: Good, Damaged, Lost -->
+        <div class="space-y-2">
+          <label class="block text-slate-300 font-bold">PHYSICAL HARDWARE CONDITION AT RETURN *</label>
+          
+          <div class="space-y-2">
+            <!-- 1. GOOD -->
+            <label class="flex items-start gap-3 p-3 rounded-lg bg-slate-950 border border-slate-800 hover:border-emerald-600/70 cursor-pointer transition-colors group">
+              <input type="radio" name="return-condition" value="GOOD" checked class="mt-1 text-emerald-500 focus:ring-emerald-500 bg-slate-900 border-slate-700 cursor-pointer" />
+              <div class="flex-1">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-emerald-300 group-hover:text-emerald-200">Good Condition (Restock Active)</span>
+                  <span class="text-[10px] px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">RECOMMENDED</span>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-0.5 leading-snug">
+                  Hardware tested and fully operational. Clean casing, all cables/power supplies accounted for. Restocks +1 to live catalog.
+                </p>
+              </div>
+            </label>
+
+            <!-- 2. DAMAGED -->
+            <label class="flex items-start gap-3 p-3 rounded-lg bg-slate-950 border border-slate-800 hover:border-amber-600/70 cursor-pointer transition-colors group">
+              <input type="radio" name="return-condition" value="DAMAGED" class="mt-1 text-amber-500 focus:ring-amber-500 bg-slate-900 border-slate-700 cursor-pointer" />
+              <div class="flex-1">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-amber-300 group-hover:text-amber-200">Damaged / Needs Technical Triage</span>
+                  <span class="text-[10px] px-1.5 py-0.2 rounded bg-amber-950 text-amber-400 border border-amber-800">MAINTENANCE</span>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-0.5 leading-snug">
+                  Item exhibits visible physical defect, bent header pins, or missing secondary accessory. Restocks with damage flag for technician audit.
+                </p>
+              </div>
+            </label>
+
+            <!-- 3. LOST -->
+            <label class="flex items-start gap-3 p-3 rounded-lg bg-slate-950 border border-slate-800 hover:border-rose-600/70 cursor-pointer transition-colors group">
+              <input type="radio" name="return-condition" value="LOST" class="mt-1 text-rose-500 focus:ring-rose-500 bg-slate-900 border-slate-700 cursor-pointer" />
+              <div class="flex-1">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-rose-300 group-hover:text-rose-200">Lost / Unrecoverable Asset</span>
+                  <span class="text-[10px] px-1.5 py-0.2 rounded bg-rose-950 text-rose-400 border border-rose-800">WRITE-OFF</span>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-0.5 leading-snug">
+                  Equipment cannot be found or was destroyed. Total inventory stock count is decremented and student is flagged for liability review.
+                </p>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Inspection Remarks & Notes -->
+        <div>
+          <label class="block text-slate-300 font-bold mb-1">INSPECTION REMARKS & LAB AUDIT NOTES</label>
+          <textarea 
+            id="return-modal-notes" 
+            rows="2" 
+            placeholder="e.g. Visual inspection passed. Returned with original USB-C cable and carrying case. Clean condition." 
+            class="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-3.5 py-2 text-slate-100 placeholder-slate-500 text-xs focus:outline-none focus:border-emerald-500 resize-none font-mono"></textarea>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="pt-2 flex items-center justify-end gap-2 font-sans">
+          <button 
+            type="button" 
+            onclick="closeReturnModal()" 
+            class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs font-semibold transition-colors">
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-bold uppercase tracking-wider transition-colors shadow-lg shadow-emerald-600/20">
+            Confirm Return & Restock Inventory
+          </button>
         </div>
       </form>
     </div>
@@ -2171,6 +2671,10 @@
       if (appInventory && appInventory.length > 0) {
         handleInventoryFilterChange();
       }
+
+      if (typeof updateBorrowDeskOnAuthChange === 'function') {
+        updateBorrowDeskOnAuthChange();
+      }
     }
 
     // 6. Render Auth Header State Pill & Buttons
@@ -2345,6 +2849,10 @@
 
       if (tabId === 'dashboard' && typeof renderDashboardAnalytics === 'function') {
         renderDashboardAnalytics();
+      }
+
+      if (tabId === 'borrow' && typeof initBorrowDesk === 'function') {
+        initBorrowDesk();
       }
     }
 
@@ -3017,22 +3525,34 @@
       handleInventoryFilterChange();
     }
 
-    // Direct Borrow Action from Catalog
+    // Direct Borrow Action from Catalog & Leaderboard
     function borrowItemDirect(itemId) {
       const item = appInventory.find(it => it.itemId === itemId);
       if (!item) return;
 
       if (Number(item.availableQty) <= 0) {
-        showToast(`"${item.name}" is currently out of stock.`, 'error');
+        showToast(`"${item.name}" is currently out of stock. Check back when active loans return.`, 'error');
         return;
       }
 
-      showToast(`Selected "${item.name}" (${item.serialId}) for checkout!`, 'success');
       switchTab('borrow');
+      if (typeof switchBorrowDeskTab === 'function') {
+        switchBorrowDeskTab('checkout');
+      }
 
-      const borrowUser = document.getElementById('borrow-desk-user');
-      if (borrowUser && currentUser) {
-        borrowUser.innerHTML = `<strong>${currentUser.fullName} (${currentUser.role === 'ADMIN' ? 'ADMIN' : currentUser.userId})</strong><br/><span class="text-emerald-400 font-mono text-xs">READY FOR CHECKOUT: ${item.name} [${item.serialId}]</span>`;
+      const itemSelect = document.getElementById('borrow-item-select');
+      if (itemSelect) {
+        itemSelect.value = itemId;
+        if (typeof handleBorrowItemSelectionChange === 'function') {
+          handleBorrowItemSelectionChange();
+        }
+      }
+
+      showToast(`Selected "${item.name}" (${item.serialId}) for checkout!`, 'success');
+
+      const checkoutForm = document.getElementById('borrow-checkout-form');
+      if (checkoutForm) {
+        checkoutForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }
 
@@ -4058,6 +4578,1006 @@
     }
 
     // =========================================================================
+    // M4: DEDICATED BORROW & RETURN SYSTEM (WORKFLOWS, CONDITION INSPECTION & RESTOCK)
+    // =========================================================================
+
+    let currentBorrowSubtab = 'checkout';
+    let currentBorrowCategoryFilter = 'ALL';
+
+    // 1. Switch Subtabs within the Borrow & Return Desk
+    function switchBorrowDeskTab(subtab) {
+      currentBorrowSubtab = subtab;
+
+      const subviewCheckout = document.getElementById('borrow-subview-checkout');
+      const subviewReturns = document.getElementById('borrow-subview-returns');
+      const subviewHistory = document.getElementById('borrow-subview-history');
+
+      const btnCheckout = document.getElementById('btn-subtab-checkout');
+      const btnReturns = document.getElementById('btn-subtab-returns');
+      const btnHistory = document.getElementById('btn-subtab-history');
+
+      if (subviewCheckout) subviewCheckout.classList.toggle('hidden', subtab !== 'checkout');
+      if (subviewReturns) subviewReturns.classList.toggle('hidden', subtab !== 'returns');
+      if (subviewHistory) subviewHistory.classList.toggle('hidden', subtab !== 'history');
+
+      const activeBtnClass = 'px-3 py-1.5 rounded-md font-semibold bg-indigo-600 text-white shadow-sm transition-all flex items-center gap-1.5';
+      const inactiveBtnClass = 'px-3 py-1.5 rounded-md font-semibold text-slate-400 hover:text-slate-200 transition-all flex items-center gap-1.5';
+
+      if (btnCheckout) btnCheckout.className = subtab === 'checkout' ? activeBtnClass : inactiveBtnClass;
+      if (btnReturns) btnReturns.className = subtab === 'returns' ? activeBtnClass : inactiveBtnClass;
+      if (btnHistory) btnHistory.className = subtab === 'history' ? activeBtnClass : inactiveBtnClass;
+
+      if (subtab === 'returns') {
+        renderActiveLoans();
+      } else if (subtab === 'history') {
+        renderReturnHistory();
+      } else if (subtab === 'checkout') {
+        updateBorrowDeskOnAuthChange();
+      }
+    }
+
+    // 2. Initialize the Borrow Desk
+    function initBorrowDesk() {
+      // Set default expected return date (+7 days)
+      const now = new Date();
+      const returnDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+      const minDateStr = now.toISOString().split('T')[0];
+      const defaultReturnDateStr = returnDate.toISOString().split('T')[0];
+
+      const dueDateInput = document.getElementById('borrow-due-date');
+      if (dueDateInput) {
+        dueDateInput.min = minDateStr;
+        if (!dueDateInput.value) {
+          dueDateInput.value = defaultReturnDateStr;
+        }
+      }
+
+      // Populate items dropdown with category filter
+      populateBorrowItemDropdown(currentBorrowCategoryFilter);
+
+      // Populate borrower info based on logged-in user
+      updateBorrowDeskOnAuthChange();
+
+      // Update date preview summary
+      handleDueDateChange();
+
+      // Render Active Loans & Count
+      renderActiveLoans();
+      renderReturnHistory();
+    }
+
+    // 3. Update Borrow Desk on Session/Auth Change
+    function updateBorrowDeskOnAuthChange() {
+      const fieldName = document.getElementById('borrow-field-name');
+      const fieldId = document.getElementById('borrow-field-id');
+      const fieldMajor = document.getElementById('borrow-field-major');
+      const fieldBatch = document.getElementById('borrow-field-batch');
+      const fieldLine = document.getElementById('borrow-field-line');
+      const adminPicker = document.getElementById('admin-borrow-student-picker');
+      const studentSelect = document.getElementById('borrow-student-select');
+      const summaryBorrower = document.getElementById('summary-borrower-name');
+      const adminReturnsFilterBox = document.getElementById('admin-returns-filter-box');
+      const returnsStudentFilter = document.getElementById('returns-student-filter');
+      const authIndicator = document.getElementById('borrow-auth-indicator');
+
+      if (!fieldName) return;
+
+      const students = appUsers.filter(u => u.role === 'STUDENT');
+
+      if (currentUser && currentUser.role === 'ADMIN') {
+        // Admin View: Can dispatch on behalf of any student
+        if (adminPicker) adminPicker.classList.remove('hidden');
+        if (adminReturnsFilterBox) adminReturnsFilterBox.classList.remove('hidden');
+
+        if (studentSelect) {
+          studentSelect.innerHTML = students.map(s => 
+            `<option value="${s.userId}">${s.fullName} (${s.userId}) · Batch ${s.batch} · ${s.major}</option>`
+          ).join('');
+        }
+
+        if (returnsStudentFilter) {
+          returnsStudentFilter.innerHTML = `
+            <option value="ALL">All Active Borrowers (Admin View)</option>
+            ${students.map(s => `<option value="${s.userId}">${s.fullName} (${s.userId})</option>`).join('')}
+          `;
+        }
+
+        if (authIndicator) {
+          authIndicator.innerHTML = `
+            <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
+            Admin Dispatch Mode
+          `;
+        }
+
+        // Auto-fill fields with selected student
+        handleAdminStudentSelectChange();
+
+      } else if (currentUser && currentUser.role === 'STUDENT') {
+        // Student View: Locked to their own profile
+        if (adminPicker) adminPicker.classList.add('hidden');
+        if (adminReturnsFilterBox) adminReturnsFilterBox.classList.add('hidden');
+
+        fieldName.innerText = currentUser.fullName;
+        fieldId.innerText = `ID: ${currentUser.userId}`;
+        fieldMajor.innerText = currentUser.major || 'Robotics & AI';
+        fieldBatch.innerText = `Batch: ${currentUser.batch || '68'}`;
+        fieldLine.innerText = `Line ID: ${currentUser.lineId || '@student'}`;
+
+        if (summaryBorrower) {
+          summaryBorrower.innerText = `${currentUser.fullName} (${currentUser.userId})`;
+        }
+
+        if (authIndicator) {
+          authIndicator.innerHTML = `
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+            Verified Student Profile
+          `;
+        }
+      } else {
+        // Guest mode
+        if (adminPicker) adminPicker.classList.add('hidden');
+        if (adminReturnsFilterBox) adminReturnsFilterBox.classList.add('hidden');
+
+        fieldName.innerText = 'Guest (Login Required)';
+        fieldId.innerText = 'ID: -';
+        fieldMajor.innerText = 'Not Authenticated';
+        fieldBatch.innerText = 'Batch: -';
+        fieldLine.innerText = 'Line ID: -';
+
+        if (summaryBorrower) {
+          summaryBorrower.innerText = 'Guest (Login Required)';
+        }
+
+        if (authIndicator) {
+          authIndicator.innerHTML = `
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+            Guest Mode (Please Login)
+          `;
+        }
+      }
+
+      renderActiveLoans();
+    }
+
+    // 4. Handle Admin Student Selection Change
+    function handleAdminStudentSelectChange() {
+      const studentSelect = document.getElementById('borrow-student-select');
+      const fieldName = document.getElementById('borrow-field-name');
+      const fieldId = document.getElementById('borrow-field-id');
+      const fieldMajor = document.getElementById('borrow-field-major');
+      const fieldBatch = document.getElementById('borrow-field-batch');
+      const fieldLine = document.getElementById('borrow-field-line');
+      const summaryBorrower = document.getElementById('summary-borrower-name');
+
+      if (!studentSelect || !studentSelect.value) return;
+
+      const student = appUsers.find(u => u.userId === studentSelect.value);
+      if (student) {
+        if (fieldName) fieldName.innerText = student.fullName;
+        if (fieldId) fieldId.innerText = `ID: ${student.userId}`;
+        if (fieldMajor) fieldMajor.innerText = student.major || 'Robotics & AI';
+        if (fieldBatch) fieldBatch.innerText = `Batch: ${student.batch || 'N/A'}`;
+        if (fieldLine) fieldLine.innerText = `Line ID: ${student.lineId || '@student'}`;
+        if (summaryBorrower) summaryBorrower.innerText = `${student.fullName} (${student.userId})`;
+      }
+    }
+
+    // 5. Populate Item Dropdown with Live Stock Availability
+    function populateBorrowItemDropdown(filterCategory = 'ALL') {
+      currentBorrowCategoryFilter = filterCategory;
+      const select = document.getElementById('borrow-item-select');
+      if (!select) return;
+
+      const previousValue = select.value;
+
+      let filteredItems = appInventory;
+      if (filterCategory !== 'ALL') {
+        filteredItems = appInventory.filter(it => it.category === filterCategory);
+      }
+
+      if (filteredItems.length === 0) {
+        select.innerHTML = '<option value="" disabled selected>No equipment found in this category</option>';
+        handleBorrowItemSelectionChange();
+        return;
+      }
+
+      // Sort: items in stock first, then alphabetically
+      filteredItems.sort((a, b) => {
+        if (a.availableQty > 0 && b.availableQty <= 0) return -1;
+        if (a.availableQty <= 0 && b.availableQty > 0) return 1;
+        return a.name.localeCompare(b.name);
+      });
+
+      select.innerHTML = filteredItems.map(item => {
+        const isOutOfStock = Number(item.availableQty) <= 0;
+        const stockLabel = isOutOfStock 
+          ? `[0/${item.totalQty} OUT OF STOCK]` 
+          : `[${item.availableQty}/${item.totalQty} Available]`;
+        return `
+          <option value="${item.itemId}" ${isOutOfStock ? 'class="text-slate-500 bg-slate-900"' : ''}>
+            ${stockLabel} ${item.name} (${item.serialId}) · ${item.category} · Bay ${item.location}
+          </option>
+        `;
+      }).join('');
+
+      // Restore previous selection if still valid, or default to first available
+      if (previousValue && filteredItems.some(it => it.itemId === previousValue)) {
+        select.value = previousValue;
+      } else {
+        const firstAvail = filteredItems.find(it => Number(it.availableQty) > 0) || filteredItems[0];
+        if (firstAvail) select.value = firstAvail.itemId;
+      }
+
+      handleBorrowItemSelectionChange();
+    }
+
+    // 6. Category Filter Button Handler for Item Dropdown
+    function filterBorrowItemsByCategory(category) {
+      document.querySelectorAll('.btn-borrow-cat-filter').forEach(btn => {
+        const cat = btn.getAttribute('data-cat');
+        if (cat === category) {
+          btn.className = 'btn-borrow-cat-filter px-2 py-0.5 rounded bg-indigo-600 text-white font-semibold shrink-0';
+        } else {
+          btn.className = 'btn-borrow-cat-filter px-2 py-0.5 rounded bg-slate-800 text-slate-400 hover:text-white shrink-0';
+        }
+      });
+
+      populateBorrowItemDropdown(category);
+    }
+
+    // 7. Handle Item Selection Change & Live Stock Check
+    function handleBorrowItemSelectionChange() {
+      const select = document.getElementById('borrow-item-select');
+      const preview = document.getElementById('borrow-item-preview');
+      const stockText = document.getElementById('borrow-live-stock-text');
+      const qtyInput = document.getElementById('borrow-qty');
+      const maxQtyLabel = document.getElementById('borrow-max-qty-label');
+      const submitBtn = document.getElementById('btn-submit-borrow');
+      const summaryItem = document.getElementById('summary-item-name');
+      const summaryLocation = document.getElementById('summary-location');
+
+      if (!select || !select.value) {
+        if (preview) preview.innerHTML = '<div class="text-slate-500 text-center py-2">No asset selected.</div>';
+        return;
+      }
+
+      const item = appInventory.find(it => it.itemId === select.value);
+      if (!item) return;
+
+      const avail = Number(item.availableQty);
+      const total = Number(item.totalQty);
+      const isOutOfStock = avail <= 0;
+
+      // Update Stock Indicator
+      if (stockText) {
+        if (isOutOfStock) {
+          stockText.innerHTML = '<span class="text-rose-400 font-bold flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span> OUT OF STOCK (0 Available)</span>';
+        } else if (avail <= 2) {
+          stockText.innerHTML = `<span class="text-amber-400 font-bold flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-400"></span> LOW STOCK (${avail} of ${total} Available)</span>`;
+        } else {
+          stockText.innerHTML = `<span class="text-emerald-400 font-bold flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> IN STOCK (${avail} of ${total} Available)</span>`;
+        }
+      }
+
+      // Update Quantity Input Controls
+      if (qtyInput) {
+        qtyInput.max = Math.max(1, avail);
+        if (isOutOfStock) {
+          qtyInput.value = 0;
+          qtyInput.disabled = true;
+        } else {
+          qtyInput.disabled = false;
+          if (Number(qtyInput.value) > avail || Number(qtyInput.value) <= 0) {
+            qtyInput.value = 1;
+          }
+        }
+      }
+
+      if (maxQtyLabel) {
+        maxQtyLabel.innerText = isOutOfStock ? '0 units (Wait for return)' : `Max: ${avail} units`;
+      }
+
+      // Update Submit Button State
+      if (submitBtn) {
+        if (isOutOfStock) {
+          submitBtn.disabled = true;
+          submitBtn.classList.add('bg-slate-800', 'text-slate-500', 'cursor-not-allowed');
+          submitBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-500', 'text-white');
+          submitBtn.innerHTML = `
+            <svg class="w-4 h-4 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            <span>Asset Out of Stock · Wait for Return</span>
+          `;
+        } else {
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('bg-slate-800', 'text-slate-500', 'cursor-not-allowed');
+          submitBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-500', 'text-white');
+          submitBtn.innerHTML = `
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>Authorize Loan & Deduct Inventory Stock</span>
+          `;
+        }
+      }
+
+      // Update Right Summary Card
+      if (summaryItem) summaryItem.innerText = `${item.name} (${item.serialId})`;
+      if (summaryLocation) summaryLocation.innerText = `${item.location} Lab Bay`;
+      handleBorrowQtyInput();
+
+      // Render Item Preview Card
+      if (preview) {
+        const catBadgeBg = {
+          Laptop: 'bg-purple-950 text-purple-300 border-purple-800',
+          Microcontroller: 'bg-cyan-950 text-cyan-300 border-cyan-800',
+          Sensor: 'bg-emerald-950 text-emerald-300 border-emerald-800',
+          Tool: 'bg-amber-950 text-amber-300 border-amber-800',
+          Projector: 'bg-sky-950 text-sky-300 border-sky-800',
+          Tripod: 'bg-orange-950 text-orange-300 border-orange-800'
+        }[item.category] || 'bg-slate-900 text-slate-300 border-slate-700';
+
+        preview.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono border ${catBadgeBg}">${item.category}</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-900 text-indigo-400 border border-slate-800">${item.location} Bay</span>
+                <span class="text-[10px] text-slate-400 font-mono">${item.brand || 'Lab Asset'}</span>
+              </div>
+              <div class="font-bold text-slate-100 text-xs sm:text-sm mt-1 font-sans">${item.name}</div>
+              <div class="text-[11px] text-indigo-400 font-mono mt-0.5">Serial: ${item.serialId}</div>
+            </div>
+            <div class="text-right shrink-0">
+              <span class="px-2.5 py-1 rounded text-[11px] font-mono font-bold ${isOutOfStock ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-emerald-950 text-emerald-300 border border-emerald-800'}">
+                ${avail} / ${total} Units Avail
+              </span>
+              <div class="text-[10px] text-slate-400 font-mono mt-1">${item.borrowCount || 0} Total Checkouts</div>
+            </div>
+          </div>
+          ${item.specs ? `
+            <div class="mt-2 pt-2 border-t border-slate-800/80 text-[11px] text-slate-400 font-mono">
+              <span class="text-slate-500">Specs:</span> ${item.specs}
+            </div>
+          ` : ''}
+        `;
+      }
+    }
+
+    // 8. Handle Quantity Input Validation
+    function handleBorrowQtyInput() {
+      const select = document.getElementById('borrow-item-select');
+      const qtyInput = document.getElementById('borrow-qty');
+      const summaryQty = document.getElementById('summary-qty');
+
+      if (!select || !qtyInput) return;
+
+      const item = appInventory.find(it => it.itemId === select.value);
+      const avail = item ? Number(item.availableQty) : 1;
+
+      let val = parseInt(qtyInput.value, 10);
+      if (isNaN(val) || val < 1) val = 1;
+      if (val > avail && avail > 0) {
+        val = avail;
+        qtyInput.value = val;
+      }
+
+      if (summaryQty) {
+        summaryQty.innerText = `${val} unit${val > 1 ? 's' : ''}`;
+      }
+    }
+
+    // 9. Handle Due Date Selection Change
+    function handleDueDateChange() {
+      const dateInput = document.getElementById('borrow-due-date');
+      const summaryDue = document.getElementById('summary-due-date');
+
+      if (!dateInput || !summaryDue) return;
+
+      if (!dateInput.value) {
+        summaryDue.innerText = '- (Select date)';
+        return;
+      }
+
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      const due = new Date(dateInput.value + 'T00:00:00');
+      const diffTime = due - today;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays < 0) {
+        summaryDue.innerHTML = `<span class="text-rose-400">${dateInput.value} (Date in past!)</span>`;
+      } else if (diffDays === 0) {
+        summaryDue.innerHTML = `<span class="text-amber-400">${dateInput.value} (Due today)</span>`;
+      } else {
+        summaryDue.innerHTML = `<span class="text-cyan-300">${dateInput.value} (${diffDays} days)</span>`;
+      }
+    }
+
+    // 10. Due Date Duration Presets (+3, +7, +14 Days)
+    function setBorrowDurationPreset(days) {
+      const today = new Date();
+      const targetDate = new Date(today.getTime() + days * 24 * 60 * 60 * 1000);
+      const targetDateStr = targetDate.toISOString().split('T')[0];
+
+      const dateInput = document.getElementById('borrow-due-date');
+      if (dateInput) {
+        dateInput.value = targetDateStr;
+        handleDueDateChange();
+      }
+
+      const presets = [3, 7, 14];
+      presets.forEach(p => {
+        const btn = document.getElementById(`preset-btn-${p}`);
+        if (btn) {
+          if (p === days) {
+            btn.className = 'px-2 py-0.5 rounded bg-indigo-600 text-white font-semibold transition-colors';
+          } else {
+            btn.className = 'px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors';
+          }
+        }
+      });
+    }
+
+    // 11. Fill Quick Research Purpose Suggestion
+    function fillBorrowPurpose(text) {
+      const purposeInput = document.getElementById('borrow-purpose');
+      if (purposeInput) {
+        purposeInput.value = text;
+        purposeInput.focus();
+      }
+    }
+
+    // 12. Submit Borrow Checkout Form (Deduct live_qty & record ACTIVE loan)
+    function handleBorrowSubmit(event) {
+      event.preventDefault();
+
+      if (!currentUser) {
+        showToast('Please log in with student or admin credentials to borrow equipment.', 'error');
+        openAuthModal('login');
+        return;
+      }
+
+      const select = document.getElementById('borrow-item-select');
+      const qtyInput = document.getElementById('borrow-qty');
+      const dueDateInput = document.getElementById('borrow-due-date');
+      const purposeInput = document.getElementById('borrow-purpose');
+
+      if (!select || !select.value) {
+        showToast('Please select a hardware asset to borrow.', 'error');
+        return;
+      }
+
+      const item = appInventory.find(it => it.itemId === select.value);
+      if (!item) {
+        showToast('Equipment asset could not be found.', 'error');
+        return;
+      }
+
+      const requestedQty = parseInt(qtyInput.value, 10) || 1;
+      if (requestedQty <= 0) {
+        showToast('Requested quantity must be at least 1.', 'error');
+        return;
+      }
+
+      if (Number(item.availableQty) < requestedQty) {
+        showToast(`Insufficient stock! Only ${item.availableQty} units available.`, 'error');
+        return;
+      }
+
+      if (!dueDateInput || !dueDateInput.value) {
+        showToast('Please specify the expected return date.', 'error');
+        return;
+      }
+
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      const dueDate = new Date(dueDateInput.value + 'T00:00:00');
+      if (dueDate < today) {
+        showToast('Expected return date cannot be in the past.', 'error');
+        return;
+      }
+
+      const purpose = (purposeInput && purposeInput.value.trim()) || 'Robotics Lab Project';
+
+      // Determine borrower identity
+      let borrower = currentUser;
+      if (currentUser.role === 'ADMIN') {
+        const studentSelect = document.getElementById('borrow-student-select');
+        if (studentSelect && studentSelect.value) {
+          const selectedStudent = appUsers.find(u => u.userId === studentSelect.value);
+          if (selectedStudent) {
+            borrower = selectedStudent;
+          }
+        }
+      }
+
+      // 1. DEDUCT live_qty from Inventory
+      item.availableQty = Math.max(0, Number(item.availableQty) - requestedQty);
+      item.borrowCount = (Number(item.borrowCount) || 0) + requestedQty;
+
+      // 2. RECORD TRANSACTION with ACTIVE Status in appLoans
+      const todayStr = new Date().toISOString().split('T')[0];
+      const newLoanId = `LN-2026-${String(appLoans.length + 1).padStart(3, '0')}`;
+
+      const newLoan = {
+        loanId: newLoanId,
+        studentId: borrower.userId,
+        studentName: borrower.fullName,
+        batch: borrower.batch || 68,
+        major: borrower.major || 'Robotics & AI',
+        lineId: borrower.lineId || '@student',
+        itemId: item.itemId,
+        itemName: item.name,
+        serialId: item.serialId,
+        category: item.category,
+        location: item.location,
+        borrowDate: todayStr,
+        dueDate: dueDateInput.value,
+        returnDate: null,
+        status: 'ACTIVE',
+        daysOverdue: 0,
+        qty: requestedQty,
+        purpose: purpose,
+        conditionOnCheckout: 'GOOD',
+        returnCondition: null,
+        inspectionNotes: null
+      };
+
+      appLoans.unshift(newLoan);
+
+      // 3. RECORD Activity Feed Timeline Event
+      addActivity(
+        'LOAN',
+        'Equipment Checked Out',
+        `${borrower.fullName} (Batch ${borrower.batch}) checked out ${requestedQty}x ${item.name} (${item.serialId}). Return due: ${dueDateInput.value}.`,
+        'indigo'
+      );
+
+      // 4. PERSIST to LocalStorage
+      saveInventory();
+      saveLoans();
+      saveActivities();
+
+      // 5. User Feedback & View Refresh
+      showToast(`Success! ${requestedQty}x "${item.name}" checked out to ${borrower.fullName}. Due: ${dueDateInput.value}.`, 'success');
+
+      // Reset form fields
+      if (purposeInput) purposeInput.value = '';
+      setBorrowDurationPreset(7);
+      populateBorrowItemDropdown(currentBorrowCategoryFilter);
+      handleInventoryFilterChange();
+      renderDashboardAnalytics();
+
+      // Automatically switch to Active Loans view so user immediately sees their record!
+      switchBorrowDeskTab('returns');
+    }
+
+    // 13. Render Active Loans Section (List for logged-in student or ALL for Admin)
+    function renderActiveLoans() {
+      const container = document.getElementById('active-loans-container');
+      const emptyState = document.getElementById('returns-empty-state');
+      const badgeCount = document.getElementById('badge-active-loans-count');
+      const summaryText = document.getElementById('returns-list-summary');
+      const searchInput = document.getElementById('returns-search-input');
+      const statusFilter = document.getElementById('returns-status-filter');
+      const studentFilter = document.getElementById('returns-student-filter');
+
+      if (!container) return;
+
+      const query = (searchInput && searchInput.value.toLowerCase().trim()) || '';
+      const filterStatus = (statusFilter && statusFilter.value) || 'ALL';
+      const selectedStudent = (studentFilter && studentFilter.value) || 'ALL';
+
+      const today = new Date();
+      today.setHours(0,0,0,0);
+
+      // 1. Filter by Active / Overdue Status
+      let activeLoansList = appLoans.filter(l => l.status === 'ACTIVE' || l.status === 'OVERDUE');
+
+      // 2. Role-Based Security Filter:
+      // If student: ONLY show loans for this student.
+      // If admin: show ALL items, or filtered student.
+      if (currentUser && currentUser.role === 'STUDENT') {
+        activeLoansList = activeLoansList.filter(l => l.studentId === currentUser.userId);
+      } else if (currentUser && currentUser.role === 'ADMIN' && selectedStudent !== 'ALL') {
+        activeLoansList = activeLoansList.filter(l => l.studentId === selectedStudent);
+      }
+
+      // Update badge counter with active count
+      if (badgeCount) {
+        badgeCount.innerText = activeLoansList.length;
+      }
+
+      // 3. Search and Status Filtering
+      let displayLoans = activeLoansList.filter(loan => {
+        // Recalculate overdue status dynamically
+        const due = new Date(loan.dueDate + 'T00:00:00');
+        const diffDays = Math.round((today - due) / (1000 * 60 * 60 * 24));
+        const isOverdue = diffDays > 0;
+
+        if (filterStatus === 'OVERDUE' && !isOverdue) return false;
+        if (filterStatus === 'ACTIVE' && isOverdue) return false;
+
+        if (query) {
+          const matchName = (loan.itemName || '').toLowerCase().includes(query);
+          const matchSerial = (loan.serialId || '').toLowerCase().includes(query);
+          const matchStudent = (loan.studentName || '').toLowerCase().includes(query);
+          const matchStudentId = (loan.studentId || '').toLowerCase().includes(query);
+          const matchPurpose = (loan.purpose || '').toLowerCase().includes(query);
+          const matchLoanId = (loan.loanId || '').toLowerCase().includes(query);
+          return matchName || matchSerial || matchStudent || matchStudentId || matchPurpose || matchLoanId;
+        }
+
+        return true;
+      });
+
+      // Update summary text
+      if (summaryText) {
+        if (!currentUser) {
+          summaryText.innerText = 'Viewing active loans in Guest Mode. Please log in to manage checkouts.';
+        } else if (currentUser.role === 'ADMIN') {
+          summaryText.innerText = `Admin View: ${displayLoans.length} active hardware borrowings across entire lab.`;
+        } else {
+          summaryText.innerText = `My Active Equipment Loans: ${displayLoans.length} item(s) checked out to ${currentUser.fullName}.`;
+        }
+      }
+
+      // Empty State
+      if (displayLoans.length === 0) {
+        container.innerHTML = '';
+        if (emptyState) emptyState.classList.remove('hidden');
+        return;
+      }
+
+      if (emptyState) emptyState.classList.add('hidden');
+
+      // Sort: Overdue items first, then nearest due date
+      displayLoans.sort((a, b) => {
+        const dueA = new Date(a.dueDate + 'T00:00:00');
+        const dueB = new Date(b.dueDate + 'T00:00:00');
+        return dueA - dueB;
+      });
+
+      // Render Cards
+      container.innerHTML = displayLoans.map(loan => {
+        const due = new Date(loan.dueDate + 'T00:00:00');
+        const diffDays = Math.round((today - due) / (1000 * 60 * 60 * 24));
+        const isOverdue = diffDays > 0;
+        const isDueToday = diffDays === 0;
+
+        let statusBadge = '';
+        let cardBorder = 'border-slate-800';
+
+        if (isOverdue) {
+          cardBorder = 'border-rose-700/60 bg-gradient-to-b from-rose-950/20 to-slate-900/90';
+          statusBadge = `
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-950 text-rose-300 border border-rose-800 flex items-center gap-1.5 animate-pulse">
+              <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+              OVERDUE (${diffDays}d late)
+            </span>
+          `;
+        } else if (isDueToday) {
+          cardBorder = 'border-amber-700/60 bg-gradient-to-b from-amber-950/20 to-slate-900/90';
+          statusBadge = `
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-950 text-amber-300 border border-amber-800 flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+              DUE TODAY
+            </span>
+          `;
+        } else {
+          statusBadge = `
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-950 text-emerald-300 border border-emerald-800 flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              ACTIVE (${Math.abs(diffDays)}d left)
+            </span>
+          `;
+        }
+
+        const catBadgeBg = {
+          Laptop: 'bg-purple-950 text-purple-300 border-purple-800',
+          Microcontroller: 'bg-cyan-950 text-cyan-300 border-cyan-800',
+          Sensor: 'bg-emerald-950 text-emerald-300 border-emerald-800',
+          Tool: 'bg-amber-950 text-amber-300 border-amber-800',
+          Projector: 'bg-sky-950 text-sky-300 border-sky-800',
+          Tripod: 'bg-orange-950 text-orange-300 border-orange-800'
+        }[loan.category] || 'bg-slate-900 text-slate-300 border-slate-700';
+
+        return `
+          <div class="rounded-xl border ${cardBorder} bg-slate-900/90 p-4 shadow-xl flex flex-col justify-between space-y-3 font-mono text-xs transition-all hover:border-slate-700">
+            
+            <!-- Card Header: Category & Status -->
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between gap-2">
+                <span class="px-2 py-0.5 rounded text-[10px] border ${catBadgeBg}">${loan.category || 'Equipment'}</span>
+                ${statusBadge}
+              </div>
+
+              <!-- Item Title & Serial -->
+              <div class="pt-1">
+                <h3 class="font-bold text-slate-100 text-sm leading-snug font-sans">${loan.itemName}</h3>
+                <div class="flex items-center gap-2 text-[11px] text-indigo-400 mt-0.5 flex-wrap">
+                  <span>Serial: ${loan.serialId}</span>
+                  <span>·</span>
+                  <span class="text-cyan-400 font-semibold">${loan.location || 'HA1'} Bay</span>
+                  <span>·</span>
+                  <span class="text-slate-500">${loan.loanId}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Borrower Info & Due Date Grid -->
+            <div class="space-y-2 p-2.5 rounded-lg bg-slate-950/80 border border-slate-800/80 text-[11px]">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400">Borrower:</span>
+                <span class="font-bold text-slate-200 text-right truncate max-w-[150px] font-sans">${loan.studentName}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400">Student ID & Batch:</span>
+                <span class="text-indigo-300">${loan.studentId} · B${loan.batch || '68'}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400">Line ID:</span>
+                <button 
+                  type="button" 
+                  onclick="copyLineIdForRecall('${loan.lineId}', '${loan.studentName}', '${loan.itemName}')" 
+                  title="Click to copy student Line ID"
+                  class="text-emerald-400 hover:text-emerald-300 underline font-semibold flex items-center gap-1">
+                  <span>${loan.lineId}</span>
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                </button>
+              </div>
+              <div class="flex items-center justify-between pt-1 border-t border-slate-800">
+                <span class="text-slate-400">Checkout Date:</span>
+                <span class="text-slate-300">${loan.borrowDate}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400">Expected Return:</span>
+                <span class="font-bold ${isOverdue ? 'text-rose-400' : 'text-cyan-300'}">${loan.dueDate}</span>
+              </div>
+            </div>
+
+            <!-- Usage Note / Purpose -->
+            ${loan.purpose ? `
+              <div class="text-[11px] text-slate-400 p-2 rounded bg-slate-950/40 border border-slate-800/60 italic leading-relaxed">
+                "${loan.purpose}"
+              </div>
+            ` : ''}
+
+            <!-- Card Action: Return Item Button -->
+            <div class="pt-2 border-t border-slate-800/80 font-sans">
+              <button 
+                type="button" 
+                onclick="openReturnModal('${loan.loanId}')" 
+                class="w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-1.5 transition-all shadow-md shadow-emerald-600/20">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <span>Return Item & Inspect Condition</span>
+              </button>
+            </div>
+
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 14. Active Loans Filter Change Handler
+    function handleReturnsFilterChange() {
+      renderActiveLoans();
+    }
+
+    // 15. Open "Return Item" Modal with Condition Check Options
+    function openReturnModal(loanId) {
+      const loan = appLoans.find(l => l.loanId === loanId);
+      if (!loan) {
+        showToast('Loan record not found.', 'error');
+        return;
+      }
+
+      const modal = document.getElementById('return-item-modal');
+      const loanIdInput = document.getElementById('return-modal-loan-id');
+      const summaryContainer = document.getElementById('return-modal-summary');
+      const notesInput = document.getElementById('return-modal-notes');
+
+      if (!modal) return;
+
+      if (loanIdInput) loanIdInput.value = loan.loanId;
+      if (notesInput) notesInput.value = '';
+
+      // Default radio to GOOD
+      const goodRadio = document.querySelector('input[name="return-condition"][value="GOOD"]');
+      if (goodRadio) goodRadio.checked = true;
+
+      // Populate summary details
+      if (summaryContainer) {
+        summaryContainer.innerHTML = `
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <div class="text-[10px] text-slate-400 uppercase tracking-wider">CHECKED OUT ASSET</div>
+              <div class="font-bold text-slate-100 text-sm font-sans mt-0.5">${loan.itemName}</div>
+              <div class="text-[11px] text-indigo-400 font-mono mt-0.5">Serial: ${loan.serialId} · Bay: ${loan.location || 'HA1'}</div>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-900 border border-slate-700 text-cyan-300 font-bold shrink-0">
+              ${loan.loanId}
+            </span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800 text-[11px] font-mono">
+            <div>
+              <span class="text-slate-400">Borrower:</span>
+              <span class="text-slate-200 font-semibold font-sans"> ${loan.studentName}</span>
+            </div>
+            <div>
+              <span class="text-slate-400">Student ID:</span>
+              <span class="text-indigo-300"> ${loan.studentId}</span>
+            </div>
+            <div>
+              <span class="text-slate-400">Line ID:</span>
+              <span class="text-emerald-400 font-semibold"> ${loan.lineId}</span>
+            </div>
+            <div>
+              <span class="text-slate-400">Due Date:</span>
+              <span class="${loan.status === 'OVERDUE' ? 'text-rose-400 font-bold' : 'text-slate-200'}"> ${loan.dueDate}</span>
+            </div>
+          </div>
+        `;
+      }
+
+      modal.style.display = 'flex';
+    }
+
+    // 16. Close "Return Item" Modal
+    function closeReturnModal() {
+      const modal = document.getElementById('return-item-modal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    // 17. Handle Return Modal Submit (Restock live_qty & update status to Restocked)
+    function handleReturnModalSubmit(event) {
+      event.preventDefault();
+
+      const loanIdInput = document.getElementById('return-modal-loan-id');
+      const notesInput = document.getElementById('return-modal-notes');
+      const conditionRadio = document.querySelector('input[name="return-condition"]:checked');
+
+      if (!loanIdInput || !loanIdInput.value) {
+        showToast('Loan identifier is missing.', 'error');
+        return;
+      }
+
+      const loan = appLoans.find(l => l.loanId === loanIdInput.value);
+      if (!loan) {
+        showToast('Loan record could not be found.', 'error');
+        return;
+      }
+
+      const condition = conditionRadio ? conditionRadio.value : 'GOOD';
+      const notes = (notesInput && notesInput.value.trim()) || '';
+      const todayStr = new Date().toISOString().split('T')[0];
+      const returnQty = Number(loan.qty) || 1;
+
+      // Find item in inventory
+      const item = appInventory.find(it => it.itemId === loan.itemId || it.serialId === loan.serialId);
+
+      // RESTOCK INVENTORY LOGIC:
+      // - GOOD: Return +returnQty to availableQty (capped at totalQty)
+      // - DAMAGED: Restock +returnQty to availableQty with triage note (or available for repairs)
+      // - LOST: Equipment lost, decrement totalQty and do not restock availableQty
+      if (item) {
+        if (condition === 'GOOD' || condition === 'DAMAGED') {
+          item.availableQty = Math.min(Number(item.totalQty), Number(item.availableQty) + returnQty);
+        } else if (condition === 'LOST') {
+          item.totalQty = Math.max(0, Number(item.totalQty) - returnQty);
+          if (Number(item.availableQty) > Number(item.totalQty)) {
+            item.availableQty = item.totalQty;
+          }
+        }
+      }
+
+      // UPDATE LOAN RECORD: Status set to RETURNED / RESTOCKED
+      loan.status = 'RETURNED';
+      loan.returnDate = todayStr;
+      loan.returnCondition = condition;
+      loan.daysOverdue = 0;
+      loan.inspectionNotes = notes || (condition === 'GOOD' 
+        ? 'Verified complete and operational. Restocked.' 
+        : condition === 'DAMAGED' 
+        ? 'Hardware returned with defects. Restocked for triage.' 
+        : 'Asset declared lost by student. Write-off report logged.');
+
+      // LOG ACTIVITY FEED TIMELINE EVENT
+      const actColor = condition === 'GOOD' ? 'emerald' : condition === 'DAMAGED' ? 'amber' : 'rose';
+      addActivity(
+        'RETURN',
+        'Hardware Checked In & Restocked',
+        `${loan.studentName} (Batch ${loan.batch}) returned ${loan.itemName} (${loan.serialId}) in ${condition} condition. Status updated to Restocked.`,
+        actColor
+      );
+
+      // PERSIST DATA
+      saveInventory();
+      saveLoans();
+      saveActivities();
+
+      // CLOSE MODAL & SHOW NOTIFICATION
+      closeReturnModal();
+      showToast(`Item returned successfully! Restocked "${loan.itemName}" into active inventory.`, 'success');
+
+      // RE-RENDER ALL RELEVANT VIEWS
+      renderActiveLoans();
+      renderReturnHistory();
+      populateBorrowItemDropdown(currentBorrowCategoryFilter);
+      handleInventoryFilterChange();
+      renderDashboardAnalytics();
+    }
+
+    // 18. Render Completed Returns & Condition History Table
+    function renderReturnHistory() {
+      const tbody = document.getElementById('return-history-tbody');
+      const badge = document.getElementById('history-count-badge');
+
+      if (!tbody) return;
+
+      const returnedLoans = appLoans.filter(l => l.status === 'RETURNED');
+
+      if (badge) {
+        badge.innerText = `${returnedLoans.length} Records Logged`;
+      }
+
+      if (returnedLoans.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="p-6 text-center text-slate-500 font-mono">
+              No equipment return audit records logged yet.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      // Sort by return date descending
+      returnedLoans.sort((a, b) => (b.returnDate || '').localeCompare(a.returnDate || ''));
+
+      tbody.innerHTML = returnedLoans.map(loan => {
+        const cond = loan.returnCondition || 'GOOD';
+        let condBadge = '';
+
+        if (cond === 'GOOD') {
+          condBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">Good (Restocked)</span>';
+        } else if (cond === 'DAMAGED') {
+          condBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950 text-amber-300 border border-amber-800">Damaged (Triage)</span>';
+        } else {
+          condBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-950 text-rose-300 border border-rose-800">Lost (Write-Off)</span>';
+        }
+
+        return `
+          <tr class="hover:bg-slate-900/60 transition-colors">
+            <td class="p-3 text-cyan-400 font-bold">${loan.loanId}</td>
+            <td class="p-3">
+              <div class="font-bold text-slate-200 font-sans">${loan.itemName}</div>
+              <div class="text-[11px] text-slate-500 font-mono">SN: ${loan.serialId} · ${loan.category}</div>
+            </td>
+            <td class="p-3">
+              <div class="text-slate-200 font-semibold font-sans">${loan.studentName}</div>
+              <div class="text-[11px] text-indigo-400 font-mono">${loan.studentId} · ${loan.lineId}</div>
+            </td>
+            <td class="p-3 text-slate-400 text-[11px]">
+              <div>Out: ${loan.borrowDate}</div>
+              <div class="text-emerald-400 font-semibold">In: ${loan.returnDate || 'Restocked'}</div>
+            </td>
+            <td class="p-3">
+              ${condBadge}
+            </td>
+            <td class="p-3 text-slate-400 text-[11px] max-w-xs truncate" title="${loan.inspectionNotes || ''}">
+              ${loan.inspectionNotes || 'Restocked into catalog without remarks.'}
+            </td>
+            <td class="p-3 text-right">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-950 text-indigo-300 border border-indigo-800">
+                RESTOCKED
+              </span>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // =========================================================================
     // 15. Setup on DOM Ready
     // =========================================================================
     window.addEventListener('DOMContentLoaded', () => {
@@ -4070,6 +5590,7 @@
       renderAuthHeader();
       renderStudentDirectory();
       renderDashboardAnalytics();
+      initBorrowDesk();
 
       const toggleBtn = document.getElementById('btn-toggle-drawer');
       if (toggleBtn) {
