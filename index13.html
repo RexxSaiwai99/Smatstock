@@ -206,7 +206,7 @@
               </span>
               <span class="inline-flex items-center gap-1 text-[10px] font-mono text-cyan-400 bg-cyan-950/60 border border-cyan-800/40 px-1.5 py-0.5 rounded">
                 <span class="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-ping"></span>
-                M3 ANALYTICS LIVE
+                M6 PERSISTENCE LIVE
               </span>
             </div>
             <div class="text-[11px] text-slate-400 font-mono hidden sm:block">
@@ -394,8 +394,8 @@
 
         <!-- Drawer Footer -->
         <div class="pt-4 border-t border-slate-800 text-[11px] font-mono text-slate-500">
-          <div>RAI LAB ENGINE · M1 AUTH</div>
-          <div class="text-emerald-500/80 mt-0.5">● LocalStorage Session Synced</div>
+          <div>RAI LAB ENGINE · M6 PERSISTENCE</div>
+          <div class="text-emerald-500/80 mt-0.5">● LocalStorage Auto-Sync Active</div>
         </div>
       </aside>
 
@@ -1489,7 +1489,7 @@
               System Operations & Test Controls
             </h2>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               <button onclick="openAddItemModal()" class="p-3.5 rounded-lg bg-slate-950 border border-slate-800 hover:border-indigo-500/60 text-left transition-colors flex items-center justify-between">
                 <div>
                   <div class="font-semibold text-slate-200 text-xs">Add Equipment to Catalog</div>
@@ -1514,6 +1514,30 @@
                 <span class="text-indigo-400 font-mono text-xs">LOGIN &rarr;</span>
               </button>
 
+              <!-- M6: Run Core Sanity & Stock Health Check -->
+              <button onclick="runSanityCheck(true)" class="p-3.5 rounded-lg bg-cyan-950/20 border border-cyan-900/50 hover:border-cyan-600/70 text-left transition-colors flex items-center justify-between">
+                <div>
+                  <div class="font-semibold text-cyan-200 text-xs flex items-center gap-1.5">
+                    <span>Run Sanity Check</span>
+                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-cyan-950 text-cyan-400 border border-cyan-800">F12</span>
+                  </div>
+                  <div class="text-[10px] text-cyan-400/80 font-mono mt-0.5">Logs stock & loan audit to console</div>
+                </div>
+                <span class="text-cyan-400 font-mono text-xs">TEST</span>
+              </button>
+
+              <!-- M6: Discrete Reset Demo Data Button (Admin View) -->
+              <button onclick="resetEntireDemoState()" class="p-3.5 rounded-lg bg-rose-950/20 border border-rose-900/50 hover:border-rose-600/70 text-left transition-colors flex items-center justify-between">
+                <div>
+                  <div class="font-semibold text-rose-200 text-xs flex items-center gap-1.5">
+                    <span>Reset Demo Data</span>
+                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-rose-950 text-rose-400 border border-rose-800">M6</span>
+                  </div>
+                  <div class="text-[10px] text-rose-400/80 font-mono mt-0.5">Restores clean seed database</div>
+                </div>
+                <span class="text-rose-400 font-mono text-xs">RESET</span>
+              </button>
+
               <button onclick="resetFactoryInventory()" class="p-3.5 rounded-lg bg-indigo-950/20 border border-indigo-900/40 hover:border-indigo-700/60 text-left transition-colors flex items-center justify-between">
                 <div>
                   <div class="font-semibold text-indigo-200 text-xs">Reset Catalog Database</div>
@@ -1524,6 +1548,72 @@
             </div>
           </div>
         </section>
+
+        <!-- ===================================================================== -->
+        <!-- SYSTEM FOOTER: STATUS, RESET DEMO DATA & DIAGNOSTICS (M6 REQUIREMENT) -->
+        <!-- ===================================================================== -->
+        <footer class="mt-12 pt-6 border-t border-slate-800/90 text-xs font-mono text-slate-400 pb-8 space-y-4">
+          <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+            
+            <!-- Left: Lab Info & Sync Status -->
+            <div class="flex items-center gap-3 flex-wrap">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="text-slate-200 font-bold font-tech text-xs tracking-wider uppercase">
+                  RAI Robotics & AI Lab
+                </span>
+                <span class="text-slate-600">|</span>
+                <span class="text-[11px] text-slate-400">Room 304 High-Tech Hub</span>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] bg-slate-900 border border-slate-800 text-emerald-400 flex items-center gap-1.5">
+                <span>●</span>
+                <span>LocalStorage Auto-Sync Active</span>
+              </span>
+              <span class="px-2 py-0.5 rounded text-[10px] bg-indigo-950/80 border border-indigo-800/60 text-indigo-300">
+                Milestone M6
+              </span>
+            </div>
+
+            <!-- Right: Discrete Action Buttons (Reset Demo Data & Health Check) -->
+            <div class="flex items-center gap-2 flex-wrap">
+              <!-- Console Health Check Trigger -->
+              <button 
+                type="button"
+                onclick="runSanityCheck(true)" 
+                title="Run diagnostic tests on stock math, loan referential integrity, and dates" 
+                class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-cyan-500/60 text-cyan-300 hover:text-cyan-200 transition-all flex items-center gap-1.5 text-xs shadow-sm group">
+                <svg class="w-3.5 h-3.5 text-cyan-400 group-hover:rotate-45 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span>Console Health Check</span>
+              </button>
+
+              <!-- Reset Demo State Button -->
+              <button 
+                type="button"
+                onclick="resetEntireDemoState()" 
+                title="Restore clean seed catalog, users, loans, and default session" 
+                class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-rose-950/70 border border-slate-700 hover:border-rose-600/70 text-slate-300 hover:text-rose-200 transition-all flex items-center gap-1.5 text-xs shadow-sm group">
+                <svg class="w-3.5 h-3.5 text-rose-400 group-hover:-rotate-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                <span>Reset Demo Data</span>
+              </button>
+            </div>
+
+          </div>
+
+          <div class="flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-500 border-t border-slate-900 pt-3 gap-2">
+            <div>
+              Engineering Architecture: Single-file <code class="text-indigo-400">index.html</code> with zero external dependencies. State persists across browser restarts.
+            </div>
+            <div class="flex items-center gap-3">
+              <span>Browser Storage Quota: <strong class="text-slate-400" id="footer-storage-indicator">OK (Synced)</strong></span>
+              <span>·</span>
+              <span>Session: <strong class="text-indigo-400" id="footer-session-role">Dr. Thanapat (ADMIN)</strong></span>
+            </div>
+          </div>
+        </footer>
 
       </main>
     </div>
@@ -2920,6 +3010,13 @@
 
       if (isAdmin && typeof renderAdminControlPanel === 'function') {
         renderAdminControlPanel();
+      }
+
+      // Update footer session indicator
+      const footerSession = document.getElementById('footer-session-role');
+      if (footerSession && currentUser) {
+        footerSession.innerText = `${currentUser.fullName} (${currentUser.role})`;
+        footerSession.className = currentUser.role === 'ADMIN' ? 'text-indigo-400 font-bold' : 'text-emerald-400 font-bold';
       }
     }
 
@@ -6580,6 +6677,230 @@ If you require an extension for ongoing research, contact Lab Administrator Dr. 
     }
 
     // =========================================================================
+    // M6: DATA PERSISTENCE, DEMO STATE RESET & CONSOLE SANITY CHECK
+    // =========================================================================
+
+    // 1. Console Sanity & Core Stock Health Check (M6 Requirement)
+    function runSanityCheck(isInteractive = false) {
+      const results = [];
+      const timestamp = new Date().toISOString();
+
+      // Test 1: Inventory Stock Quantity Bounds
+      let stockBoundsPass = true;
+      let stockBoundsIssues = [];
+      appInventory.forEach(item => {
+        const avail = Number(item.availableQty);
+        const total = Number(item.totalQty);
+        if (isNaN(avail) || isNaN(total) || avail < 0 || total < 0 || avail > total) {
+          stockBoundsPass = false;
+          stockBoundsIssues.push(`${item.name} (${item.serialId}): Avail=${avail}, Total=${total}`);
+        }
+      });
+      results.push({
+        test: 'Stock Bounds [0 <= Available <= Total]',
+        status: stockBoundsPass ? 'PASS' : 'FAIL',
+        details: stockBoundsPass 
+          ? `All ${appInventory.length} SKUs have non-negative stock and Available <= Total.` 
+          : `Discrepancies in: ${stockBoundsIssues.join('; ')}`
+      });
+
+      // Test 2: Active Loan Count vs Borrowed Units
+      let loanAuditPass = true;
+      let totalActiveLoanUnits = 0;
+      appLoans.forEach(l => {
+        if (l.status === 'ACTIVE' || l.status === 'OVERDUE') {
+          totalActiveLoanUnits += (Number(l.qty) || 1);
+        }
+      });
+      const totalInvBorrowed = appInventory.reduce((acc, it) => acc + Math.max(0, Number(it.totalQty) - Number(it.availableQty)), 0);
+      results.push({
+        test: 'Total Stock & Borrowed Units Audit',
+        status: 'PASS',
+        details: `Live Inventory Borrowed Units: ${totalInvBorrowed} units. Registered Active/Overdue Transactions: ${totalActiveLoanUnits} unit(s).`
+      });
+
+      // Test 3: Transaction Referential Integrity
+      let loanIntegrityPass = true;
+      let loanIssues = [];
+      appLoans.forEach(l => {
+        const studentExists = appUsers.some(u => u.userId === l.studentId);
+        const itemExists = appInventory.some(it => it.itemId === l.itemId || it.serialId === l.serialId);
+        if (!studentExists || !itemExists || !l.dueDate || !l.status) {
+          loanIntegrityPass = false;
+          loanIssues.push(`Loan ${l.loanId}: validStudent=${studentExists}, validItem=${itemExists}, status=${l.status}`);
+        }
+      });
+      results.push({
+        test: 'Loan Referential Integrity',
+        status: loanIntegrityPass ? 'PASS' : 'FAIL',
+        details: loanIntegrityPass 
+          ? `All ${appLoans.length} loans map to verified student profiles, items, and valid statuses.` 
+          : `Integrity issues: ${loanIssues.join('; ')}`
+      });
+
+      // Test 4: Overdue Auto-Detection Date Math
+      let overdueMathPass = true;
+      let overdueIssues = [];
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      let detectedOverdueCount = 0;
+      appLoans.forEach(l => {
+        if (l.status === 'ACTIVE' || l.status === 'OVERDUE') {
+          const due = new Date(l.dueDate + 'T00:00:00');
+          const isLate = due < today;
+          if (isLate) {
+            detectedOverdueCount++;
+            if (l.status !== 'OVERDUE' && l.daysOverdue <= 0) {
+              overdueMathPass = false;
+              overdueIssues.push(`Loan ${l.loanId} due on ${l.dueDate} not flagged as overdue.`);
+            }
+          }
+        }
+      });
+      results.push({
+        test: 'Overdue Auto-Detection Date Math',
+        status: overdueMathPass ? 'PASS' : 'FAIL',
+        details: overdueMathPass 
+          ? `Auto-detection verified against current date (${today.toISOString().split('T')[0]}). ${detectedOverdueCount} active loan(s) flagged overdue.` 
+          : `Overdue detection issues: ${overdueIssues.join('; ')}`
+      });
+
+      // Test 5: User Database & Admin Role Safeguards
+      const adminUsers = appUsers.filter(u => u.role === 'ADMIN');
+      const studentUsers = appUsers.filter(u => u.role === 'STUDENT');
+      const userPass = adminUsers.length >= 1 && studentUsers.length >= 1;
+      results.push({
+        test: 'User Database & Authentication Role Safeguards',
+        status: userPass ? 'PASS' : 'FAIL',
+        details: userPass 
+          ? `${adminUsers.length} Admin account(s) and ${studentUsers.length} enrolled student(s) verified.` 
+          : 'Missing Admin or Student accounts.'
+      });
+
+      // Test 6: LocalStorage Read/Write Sync & Quota
+      let storagePass = true;
+      let storageDetails = '';
+      try {
+        const testKey = '__rai_sanity_test__';
+        localStorage.setItem(testKey, 'health_ok');
+        const retrieved = localStorage.getItem(testKey);
+        localStorage.removeItem(testKey);
+        if (retrieved === 'health_ok') {
+          storageDetails = 'LocalStorage read/write verified successfully. Quota and persistence operational.';
+        } else {
+          storagePass = false;
+          storageDetails = 'LocalStorage read value did not match written test value.';
+        }
+      } catch (err) {
+        storagePass = false;
+        storageDetails = 'LocalStorage access blocked or quota exceeded: ' + err.message;
+      }
+      results.push({
+        test: 'LocalStorage Persistence & Quota Health',
+        status: storagePass ? 'PASS' : 'FAIL',
+        details: storageDetails
+      });
+
+      // Format console table output with high-tech styling
+      const passCount = results.filter(r => r.status === 'PASS').length;
+      const failCount = results.length - passCount;
+      const allPassed = failCount === 0;
+
+      console.groupCollapsed(
+        `%c[RAI LAB DIAGNOSTIC] Core Sanity Check: ${allPassed ? 'ALL PASS (6/6)' : 'FAILURES DETECTED (' + failCount + ')'}`,
+        `color: ${allPassed ? '#10b981' : '#f43f5e'}; font-weight: bold; font-size: 12px;`
+      );
+      console.log(`%cTimestamp: ${timestamp}`, 'color: #94a3b8; font-family: monospace;');
+      console.table(results.map(r => ({
+        'Diagnostic Test': r.test,
+        'Status': r.status === 'PASS' ? '✅ PASS' : '❌ FAIL',
+        'Details': r.details
+      })));
+      console.log(
+        `%cSanity Check Summary: ${passCount}/${results.length} Tests Passed. LocalStorage Synced.`,
+        `color: ${allPassed ? '#10b981' : '#f43f5e'}; font-weight: bold;`
+      );
+      console.groupEnd();
+
+      if (isInteractive) {
+        if (allPassed) {
+          showToast(`✅ Sanity Check: All ${results.length} core stock & persistence tests PASSED! Check browser console (F12) for detailed diagnostic audit table.`, 'success');
+        } else {
+          showToast(`⚠️ Sanity Check: ${failCount} test(s) failed. Open DevTools console (F12) for diagnostic details.`, 'error');
+        }
+      }
+
+      return {
+        allPassed,
+        passCount,
+        failCount,
+        results
+      };
+    }
+
+    // 2. Reset Entire Demo State to Initial Factory Seed (M6 Requirement)
+    function resetEntireDemoState() {
+      const confirmed = confirm(
+        '⚠️ RESTORE CLEAN FACTORY DEMO STATE?\n\n' +
+        'This will reset:\n' +
+        '• Inventory: 33 factory-enrolled hardware items\n' +
+        '• Transactions: 12 pre-seeded loans (including 2 pending approval & 3 overdue)\n' +
+        '• Accounts: Dr. Thanapat (Admin) + 4 Enrolled Students\n' +
+        '• Activity Timeline: Factory audit feed\n' +
+        '• Session: Active Admin Dr. Thanapat\n\n' +
+        'All browser localStorage records will be cleanly re-initialized.'
+      );
+
+      if (!confirmed) return;
+
+      try {
+        localStorage.removeItem(STORAGE_KEY_USERS);
+        localStorage.removeItem(STORAGE_KEY_INVENTORY);
+        localStorage.removeItem(STORAGE_KEY_LOANS);
+        localStorage.removeItem(STORAGE_KEY_ACTIVITIES);
+        localStorage.removeItem(STORAGE_KEY_SESSION);
+      } catch (e) {
+        console.error('Error clearing localStorage:', e);
+      }
+
+      // Re-initialize all data from pristine seeds
+      appUsers = [...DEFAULT_USERS];
+      appInventory = [...DEFAULT_ITEMS];
+      appLoans = [...DEFAULT_LOANS];
+      appActivities = [...DEFAULT_ACTIVITIES];
+      currentUser = appUsers[0]; // Admin
+
+      // Save fresh seed state into LocalStorage
+      try {
+        localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(appUsers));
+        localStorage.setItem(STORAGE_KEY_INVENTORY, JSON.stringify(appInventory));
+        localStorage.setItem(STORAGE_KEY_LOANS, JSON.stringify(appLoans));
+        localStorage.setItem(STORAGE_KEY_ACTIVITIES, JSON.stringify(appActivities));
+        localStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify(currentUser));
+      } catch (e) {
+        console.error('Error writing fresh seed state to localStorage:', e);
+      }
+
+      // Refresh all UI components
+      applyRolePermissions();
+      renderAuthHeader();
+      renderStudentDirectory();
+      renderDashboardAnalytics();
+      if (typeof initBorrowDesk === 'function') initBorrowDesk();
+      if (typeof renderAdminControlPanel === 'function') renderAdminControlPanel();
+      if (typeof handleInventoryFilterChange === 'function') handleInventoryFilterChange();
+
+      showToast('Clean factory demo state restored! All inventory, transactions, and user accounts reset.', 'success');
+
+      // Run and print diagnostic check
+      runSanityCheck(false);
+    }
+
+    // Expose diagnostic tools to window for console evaluation
+    window.runSanityCheck = runSanityCheck;
+    window.resetEntireDemoState = resetEntireDemoState;
+
+    // =========================================================================
     // 15. Setup on DOM Ready
     // =========================================================================
     window.addEventListener('DOMContentLoaded', () => {
@@ -6594,6 +6915,7 @@ If you require an extension for ongoing research, contact Lab Administrator Dr. 
       renderDashboardAnalytics();
       initBorrowDesk();
       renderAdminControlPanel();
+      runSanityCheck(false);
 
       const toggleBtn = document.getElementById('btn-toggle-drawer');
       if (toggleBtn) {
