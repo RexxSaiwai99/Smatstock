@@ -13,6 +13,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+  <!-- Official Supabase JavaScript SDK (v2 CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -251,6 +254,16 @@
 
       <!-- User Auth State Pill & Controls (Right) -->
       <div class="flex items-center gap-2.5 sm:gap-3">
+        <!-- Live Supabase Cloud Database Status Button -->
+        <button 
+          id="btn-supabase-status" 
+          onclick="openSupabaseConfigModal()" 
+          title="Click to view Supabase connection status & configure API keys"
+          class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono border transition-all bg-emerald-950/60 border-emerald-700/60 text-emerald-300 hover:bg-emerald-900/60 shadow-inner">
+          <span id="supabase-status-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+          <span id="supabase-status-text">SUPABASE READY</span>
+        </button>
+
         <!-- Logged-in User State Pill -->
         <div id="auth-state-container" class="flex items-center gap-2">
           <!-- Rendered dynamically by JavaScript -->
@@ -2014,6 +2027,115 @@
     </div>
   </div>
 
+  <!-- Supabase Cloud Database Configuration Modal -->
+  <div id="supabase-config-modal" class="modal-backdrop">
+    <div class="w-full max-w-xl rounded-2xl border border-slate-800 bg-[#0c1222] shadow-2xl overflow-hidden backdrop-blur-md">
+      <div class="flex items-center justify-between border-b border-slate-800 bg-slate-950/70 px-6 py-4">
+        <div class="flex items-center gap-2.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+          <div>
+            <h3 class="text-sm font-bold text-slate-100 font-tech">Supabase Cloud Database & Realtime Sync</h3>
+            <p class="text-[11px] font-mono text-emerald-400">Official @supabase/supabase-js v2 Integration</p>
+          </div>
+        </div>
+        <button onclick="closeSupabaseConfigModal()" class="text-slate-400 hover:text-white font-mono text-sm">✕</button>
+      </div>
+
+      <div class="p-6 space-y-4 font-mono text-xs">
+        <!-- Live Connection Status Card -->
+        <div id="modal-supabase-status-banner" class="p-3 rounded-lg border flex items-center justify-between gap-3 bg-slate-950/80 border-slate-800">
+          <div class="flex items-center gap-2">
+            <span id="modal-supabase-dot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+            <div>
+              <div id="modal-supabase-title" class="font-bold text-slate-200">Supabase Connection Status</div>
+              <div id="modal-supabase-sub" class="text-[10px] text-slate-400">Checking credentials...</div>
+            </div>
+          </div>
+          <span id="modal-supabase-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-900 border border-slate-800 text-slate-400">
+            INITIALIZING
+          </span>
+        </div>
+
+        <form id="supabase-keys-form" onsubmit="handleSupabaseKeysSubmit(event)" class="space-y-3.5">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-slate-300 font-bold">SUPABASE PROJECT URL *</label>
+              <span class="text-[10px] text-slate-500 font-normal">Script line ~2070 or paste below</span>
+            </div>
+            <input 
+              type="text" 
+              id="cfg-supabase-url" 
+              placeholder="https://xyzcompany.supabase.co" 
+              class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3.5 py-2 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-emerald-500 text-xs font-mono"
+            />
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-slate-300 font-bold">SUPABASE ANON / PUBLIC API KEY *</label>
+              <span class="text-[10px] text-slate-500 font-normal">Settings &rarr; API &rarr; Project API keys</span>
+            </div>
+            <input 
+              type="password" 
+              id="cfg-supabase-key" 
+              placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." 
+              class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3.5 py-2 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-emerald-500 text-xs font-mono"
+            />
+          </div>
+
+          <div class="flex items-center justify-between pt-1 gap-2">
+            <button 
+              type="button" 
+              onclick="testSupabaseConnection()" 
+              class="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-300 font-sans font-semibold text-xs flex items-center gap-1.5 transition-colors">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              <span>Test Connection</span>
+            </button>
+
+            <div class="flex items-center gap-2 font-sans">
+              <button 
+                type="button" 
+                onclick="closeSupabaseConfigModal()" 
+                class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold">
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-colors shadow-lg shadow-emerald-600/20">
+                Connect & Save
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <!-- Database Schema & One-Click Seeding Section -->
+        <div class="pt-3 border-t border-slate-800 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-slate-300 font-bold text-[11px]">SUPABASE SQL SCHEMA & INITIAL DATA</span>
+            <div class="flex items-center gap-1.5 font-sans">
+              <button 
+                type="button" 
+                onclick="copySupabaseSchemaSql()" 
+                class="px-2.5 py-1 rounded bg-slate-900 border border-slate-700 hover:border-slate-500 text-cyan-300 text-[11px] font-mono flex items-center gap-1">
+                <span>📋 Copy SQL Schema</span>
+              </button>
+              <button 
+                type="button" 
+                onclick="seedSupabaseInventory(true)" 
+                class="px-2.5 py-1 rounded bg-indigo-600/80 hover:bg-indigo-600 text-white text-[11px] font-sans font-semibold flex items-center gap-1">
+                <span>🌱 Seed 33 Items</span>
+              </button>
+            </div>
+          </div>
+          <p class="text-[10px] text-slate-400 leading-relaxed">
+            Run the SQL Schema in your <strong>Supabase SQL Editor</strong> to create the <code class="text-indigo-300">profiles</code>, <code class="text-indigo-300">equipment</code>, and <code class="text-indigo-300">borrow_requests</code> tables with Realtime replication enabled.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification Container -->
   <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm pointer-events-none"></div>
 
@@ -2021,6 +2143,648 @@
   <!-- 5. INLINE JAVASCRIPT: M1 AUTH, REGISTRATION & ROLE-BASED VIEW ROUTER      -->
   <!-- ========================================================================= -->
   <script>
+    // Immediate global window assignments to ensure all inline HTML event handlers resolve cleanly
+    window.switchTab = switchTab;
+    window.openSupabaseConfigModal = openSupabaseConfigModal;
+    window.closeSupabaseConfigModal = closeSupabaseConfigModal;
+    window.updateDashboardAnalytics = updateDashboardAnalytics;
+    window.renderDashboardAnalytics = renderDashboardAnalytics;
+    window.handleBorrowSubmit = handleBorrowSubmit;
+    window.handleSignupSubmit = handleSignupSubmit;
+    window.handleStudentSignUp = handleStudentSignUp;
+    window.handleLoginSubmit = handleLoginSubmit;
+    window.logoutUser = logoutUser;
+    window.saveSession = saveSession;
+    window.applyRolePermissions = applyRolePermissions;
+
+    // =========================================================================
+    // 0. OFFICIAL SUPABASE CLIENT INITIALIZATION & CONFIGURATION
+    // -------------------------------------------------------------------------
+    // PASTE YOUR SUPABASE PROJECT URL AND ANON KEY IN THE CONSTANTS BELOW
+    // (OR CONFIGURE THEM VIA THE IN-APP 'SUPABASE' BUTTON IN THE TOP HEADER):
+    // =========================================================================
+    const SUPABASE_URL = 'https://pbrwavlhwjcahugrwnfb.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBicndhdmxod2pjYWh1Z3J3bmZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTExOTQ5MTUsImV4cCI6MjEwNjc3MDkxNX0.ALm-kaQ1cGLx6lSj4qiHSjEG3px8lwR1Quf45oD3XYI';
+
+    // Active Supabase client instance & connection state
+    let supabaseClient = null;
+    let isSupabaseLive = false;
+    let supabaseRealtimeChannel = null;
+
+    // Supabase Configuration Helper
+    function isSupabaseConfigured() {
+      const storedUrl = localStorage.getItem('rai_supabase_url');
+      const storedKey = localStorage.getItem('rai_supabase_anon_key');
+      const activeUrl = (storedUrl && storedUrl.trim()) || SUPABASE_URL;
+      const activeKey = (storedKey && storedKey.trim()) || SUPABASE_ANON_KEY;
+
+      return Boolean(
+        activeUrl && 
+        !activeUrl.includes('YOUR_SUPABASE_PROJECT_ID') && 
+        activeKey && 
+        !activeKey.includes('YOUR_SUPABASE_ANON_KEY')
+      );
+    }
+
+    function isSupabaseActive() {
+      return Boolean(isSupabaseLive && supabaseClient);
+    }
+
+    // Initialize Supabase Client
+    function initSupabaseClient() {
+      const storedUrl = localStorage.getItem('rai_supabase_url');
+      const storedKey = localStorage.getItem('rai_supabase_anon_key');
+      const activeUrl = (storedUrl && storedUrl.trim()) || SUPABASE_URL;
+      const activeKey = (storedKey && storedKey.trim()) || SUPABASE_ANON_KEY;
+
+      const ready = isSupabaseConfigured();
+
+      if (ready && window.supabase && typeof window.supabase.createClient === 'function') {
+        try {
+          supabaseClient = window.supabase.createClient(activeUrl, activeKey, {
+            auth: {
+              persistSession: true,
+              autoRefreshToken: true
+            }
+          });
+          isSupabaseLive = true;
+          console.log('%c[Supabase] Client initialized successfully for live multi-user sync', 'color: #10b981; font-weight: bold;');
+          setupSupabaseRealtime();
+          setupSupabaseAuthListener();
+        } catch (err) {
+          console.warn('[Supabase] Client initialization error:', err);
+          isSupabaseLive = false;
+        }
+      } else {
+        isSupabaseLive = false;
+        console.log('%c[Supabase] Running in local demo mode (set SUPABASE_URL & SUPABASE_ANON_KEY to enable live multi-user Postgres sync)', 'color: #f59e0b;');
+      }
+      updateSupabaseStatusBadge();
+    }
+
+    // Update Header and Modal status badge
+    function updateSupabaseStatusBadge() {
+      const btnStatus = document.getElementById('btn-supabase-status');
+      const dot = document.getElementById('supabase-status-dot');
+      const text = document.getElementById('supabase-status-text');
+
+      const modalDot = document.getElementById('modal-supabase-dot');
+      const modalTitle = document.getElementById('modal-supabase-title');
+      const modalSub = document.getElementById('modal-supabase-sub');
+      const modalBadge = document.getElementById('modal-supabase-badge');
+
+      if (isSupabaseActive()) {
+        if (btnStatus) {
+          btnStatus.className = 'hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono border transition-all bg-emerald-950/80 border-emerald-700 text-emerald-300 hover:bg-emerald-900 shadow-inner';
+        }
+        if (dot) dot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping';
+        if (text) text.innerText = 'SUPABASE LIVE';
+
+        if (modalDot) modalDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse';
+        if (modalTitle) modalTitle.innerText = 'Connected to Live Supabase Database';
+        if (modalSub) modalSub.innerText = 'Postgres Realtime sync active across multiple devices';
+        if (modalBadge) {
+          modalBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-800';
+          modalBadge.innerText = 'LIVE REALTIME';
+        }
+      } else {
+        if (btnStatus) {
+          btnStatus.className = 'hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono border transition-all bg-amber-950/60 border-amber-700/60 text-amber-300 hover:bg-amber-900/60 shadow-inner';
+        }
+        if (dot) dot.className = 'w-1.5 h-1.5 rounded-full bg-amber-400';
+        if (text) text.innerText = 'CONNECT SUPABASE';
+
+        if (modalDot) modalDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400';
+        if (modalTitle) modalTitle.innerText = 'Supabase Credentials Needed';
+        if (modalSub) modalSub.innerText = 'Running in LocalStorage fallback mode until API keys are set';
+        if (modalBadge) {
+          modalBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950 text-amber-300 border border-amber-800';
+          modalBadge.innerText = 'STANDBY';
+        }
+      }
+    }
+
+    // Modal Handlers
+    function openSupabaseConfigModal() {
+      const modal = document.getElementById('supabase-config-modal');
+      const urlInput = document.getElementById('cfg-supabase-url');
+      const keyInput = document.getElementById('cfg-supabase-key');
+
+      const storedUrl = localStorage.getItem('rai_supabase_url');
+      const storedKey = localStorage.getItem('rai_supabase_anon_key');
+
+      if (urlInput) {
+        urlInput.value = storedUrl || (SUPABASE_URL.includes('YOUR_SUPABASE') ? '' : SUPABASE_URL);
+      }
+      if (keyInput) {
+        keyInput.value = storedKey || (SUPABASE_ANON_KEY.includes('YOUR_SUPABASE') ? '' : SUPABASE_ANON_KEY);
+      }
+
+      updateSupabaseStatusBadge();
+      if (modal) modal.classList.add('open');
+    }
+
+    function closeSupabaseConfigModal() {
+      const modal = document.getElementById('supabase-config-modal');
+      if (modal) modal.classList.remove('open');
+    }
+
+    function handleSupabaseKeysSubmit(event) {
+      event.preventDefault();
+      const urlInput = document.getElementById('cfg-supabase-url');
+      const keyInput = document.getElementById('cfg-supabase-key');
+
+      const url = urlInput ? urlInput.value.trim() : '';
+      const key = keyInput ? keyInput.value.trim() : '';
+
+      if (!url || !key) {
+        showToast('Please provide both Supabase Project URL and Anon API Key.', 'error');
+        return;
+      }
+
+      localStorage.setItem('rai_supabase_url', url);
+      localStorage.setItem('rai_supabase_anon_key', key);
+
+      initSupabaseClient();
+
+      if (isSupabaseActive()) {
+        showToast('Connected to Supabase! Syncing equipment & borrow requests...', 'success');
+        fetchInventory();
+        fetchLoans();
+        fetchProfiles();
+        closeSupabaseConfigModal();
+      } else {
+        showToast('Failed to initialize Supabase. Please verify URL and Anon Key.', 'error');
+      }
+    }
+
+    async function testSupabaseConnection() {
+      const urlInput = document.getElementById('cfg-supabase-url');
+      const keyInput = document.getElementById('cfg-supabase-key');
+
+      const url = (urlInput && urlInput.value.trim()) || localStorage.getItem('rai_supabase_url') || SUPABASE_URL;
+      const key = (keyInput && keyInput.value.trim()) || localStorage.getItem('rai_supabase_anon_key') || SUPABASE_ANON_KEY;
+
+      if (!url || url.includes('YOUR_SUPABASE') || !key || key.includes('YOUR_SUPABASE')) {
+        showToast('Please paste your Supabase Project URL and Anon Key first.', 'error');
+        return;
+      }
+
+      try {
+        const testClient = window.supabase.createClient(url, key);
+        const { data, error } = await testClient.from('equipment').select('count', { count: 'exact', head: true });
+        if (error && error.code !== 'PGRST116') {
+          showToast(`Connection error: ${error.message}. (Did you create the tables?)`, 'error');
+        } else {
+          showToast('Supabase connection verified successfully! Database is reachable.', 'success');
+        }
+      } catch (err) {
+        showToast('Network error connecting to Supabase: ' + err.message, 'error');
+      }
+    }
+
+    function copySupabaseSchemaSql() {
+      const sql = 
+`-- RAI Robotics & AI Lab - Supabase PostgreSQL Schema
+-- Run this in your Supabase SQL Editor (SQL Editor -> New Query -> Run)
+
+-- 1. Profiles Table (Linked to Auth)
+CREATE TABLE IF NOT EXISTS public.profiles (
+  id UUID PRIMARY KEY,
+  user_id TEXT UNIQUE,
+  full_name TEXT,
+  role TEXT DEFAULT 'STUDENT',
+  batch INT DEFAULT 68,
+  major TEXT DEFAULT 'Robotics & AI',
+  line_id TEXT DEFAULT '@student',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 2. Equipment Table (Inventory Assets)
+CREATE TABLE IF NOT EXISTS public.equipment (
+  id TEXT PRIMARY KEY,
+  item_id TEXT UNIQUE,
+  name TEXT NOT NULL,
+  serial_id TEXT UNIQUE NOT NULL,
+  brand TEXT,
+  category TEXT,
+  location TEXT,
+  total_qty INT DEFAULT 1,
+  available_qty INT DEFAULT 1,
+  borrow_count INT DEFAULT 0,
+  specs TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 3. Borrow Requests Table (Loan Transactions)
+CREATE TABLE IF NOT EXISTS public.borrow_requests (
+  id TEXT PRIMARY KEY,
+  loan_id TEXT UNIQUE,
+  student_id TEXT,
+  student_name TEXT,
+  batch INT DEFAULT 68,
+  major TEXT,
+  line_id TEXT,
+  item_id TEXT,
+  item_name TEXT,
+  serial_id TEXT,
+  category TEXT,
+  location TEXT,
+  borrow_date TEXT,
+  due_date TEXT,
+  return_date TEXT,
+  status TEXT DEFAULT 'PENDING',
+  days_overdue INT DEFAULT 0,
+  qty INT DEFAULT 1,
+  purpose TEXT,
+  condition_on_checkout TEXT DEFAULT 'GOOD',
+  return_condition TEXT,
+  inspection_notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 4. Enable Row Level Security (RLS) & Public Prototype Policies
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.equipment ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.borrow_requests ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public profiles read" ON public.profiles FOR SELECT USING (true);
+CREATE POLICY "Public profiles write" ON public.profiles FOR ALL USING (true);
+
+CREATE POLICY "Public equipment read" ON public.equipment FOR SELECT USING (true);
+CREATE POLICY "Public equipment write" ON public.equipment FOR ALL USING (true);
+
+CREATE POLICY "Public borrow_requests read" ON public.borrow_requests FOR SELECT USING (true);
+CREATE POLICY "Public borrow_requests write" ON public.borrow_requests FOR ALL USING (true);
+
+-- 5. Enable Realtime Publications
+ALTER PUBLICATION supabase_realtime ADD TABLE public.equipment;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.borrow_requests;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.profiles;`;
+
+      navigator.clipboard.writeText(sql).then(() => {
+        showToast('📋 Supabase SQL Schema copied to clipboard! Paste into Supabase SQL Editor.', 'success');
+      }).catch(() => {
+        window.prompt('Copy Supabase SQL Schema:', sql);
+      });
+    }
+
+    // Data Mappers between DB and App
+    function mapEquipmentFromDb(row) {
+      return {
+        itemId: row.item_id || row.id,
+        name: row.name,
+        serialId: row.serial_id,
+        brand: row.brand,
+        category: row.category,
+        location: row.location,
+        totalQty: Number(row.total_qty) || 1,
+        availableQty: Number(row.available_qty) || 0,
+        borrowCount: Number(row.borrow_count) || 0,
+        specs: row.specs || 'Robotics laboratory asset'
+      };
+    }
+
+    function mapEquipmentToDb(item) {
+      return {
+        id: item.itemId,
+        item_id: item.itemId,
+        name: item.name,
+        serial_id: item.serialId,
+        brand: item.brand,
+        category: item.category,
+        location: item.location,
+        total_qty: Number(item.totalQty) || 1,
+        available_qty: Number(item.availableQty) || 0,
+        borrow_count: Number(item.borrowCount) || 0,
+        specs: item.specs || 'Robotics laboratory asset'
+      };
+    }
+
+    function mapLoanFromDb(row) {
+      return {
+        loanId: row.loan_id || row.id,
+        studentId: row.student_id,
+        studentName: row.student_name,
+        batch: Number(row.batch) || 68,
+        major: row.major || 'Robotics & AI',
+        lineId: row.line_id || '@student',
+        itemId: row.item_id,
+        itemName: row.item_name,
+        serialId: row.serial_id,
+        category: row.category,
+        location: row.location,
+        borrowDate: row.borrow_date,
+        dueDate: row.due_date,
+        returnDate: row.return_date || null,
+        status: (row.status || 'PENDING').toUpperCase(),
+        daysOverdue: Number(row.days_overdue) || 0,
+        qty: Number(row.qty) || 1,
+        purpose: row.purpose,
+        conditionOnCheckout: row.condition_on_checkout || 'GOOD',
+        returnCondition: row.return_condition || null,
+        inspectionNotes: row.inspection_notes || null
+      };
+    }
+
+    function mapLoanToDb(loan) {
+      return {
+        id: loan.loanId,
+        loan_id: loan.loanId,
+        student_id: loan.studentId,
+        student_name: loan.studentName,
+        batch: Number(loan.batch) || 68,
+        major: loan.major || 'Robotics & AI',
+        line_id: loan.lineId || '@student',
+        item_id: loan.itemId,
+        item_name: loan.itemName,
+        serial_id: loan.serialId,
+        category: loan.category,
+        location: loan.location,
+        borrow_date: loan.borrowDate,
+        due_date: loan.dueDate,
+        return_date: loan.returnDate || null,
+        status: loan.status,
+        days_overdue: Number(loan.daysOverdue) || 0,
+        qty: Number(loan.qty) || 1,
+        purpose: loan.purpose,
+        condition_on_checkout: loan.conditionOnCheckout || 'GOOD',
+        return_condition: loan.returnCondition || null,
+        inspection_notes: loan.inspectionNotes || null
+      };
+    }
+
+    // Seed Supabase with 33 Default Items (No recursive cross-function calls)
+    let isSeedingInventory = false;
+    async function seedSupabaseInventory(showToastFlag = false) {
+      if (!isSupabaseActive()) {
+        if (showToastFlag) showToast('Supabase is not configured yet. Set API keys first.', 'error');
+        return;
+      }
+      if (isSeedingInventory) return;
+      isSeedingInventory = true;
+      try {
+        const rows = DEFAULT_ITEMS.map(mapEquipmentToDb);
+        const { error } = await supabaseClient.from('equipment').upsert(rows, { onConflict: 'serial_id' });
+        if (error) throw error;
+        
+        // Safely update local state and UI without recursive fetchInventory call
+        appInventory = [...DEFAULT_ITEMS];
+        localStorage.setItem(STORAGE_KEY_INVENTORY, JSON.stringify(appInventory));
+        updateInventoryTelemetry();
+        if (typeof populateBorrowItemDropdown === 'function') {
+          populateBorrowItemDropdown(currentBorrowCategoryFilter);
+        }
+        renderInventory(appInventory);
+
+        if (showToastFlag) {
+          showToast('Seeded 33 laboratory equipment items into Supabase equipment table!', 'success');
+        }
+        console.log('[Supabase] Successfully seeded 33 equipment items to cloud database.');
+      } catch (err) {
+        if (showToastFlag) showToast('Seed error: ' + err.message, 'error');
+        console.warn('[Supabase] Seed inventory error:', err.message);
+      } finally {
+        isSeedingInventory = false;
+      }
+    }
+
+    // Seed Supabase with Initial Loans (No recursive cross-function calls)
+    let isSeedingLoans = false;
+    async function seedSupabaseLoans(showToastFlag = false) {
+      if (!isSupabaseActive()) return;
+      if (isSeedingLoans) return;
+      isSeedingLoans = true;
+      try {
+        const rows = DEFAULT_LOANS.map(mapLoanToDb);
+        const { error } = await supabaseClient.from('borrow_requests').upsert(rows, { onConflict: 'loan_id' });
+        if (error) throw error;
+        appLoans = [...DEFAULT_LOANS];
+        localStorage.setItem(STORAGE_KEY_LOANS, JSON.stringify(appLoans));
+        renderDashboardAnalytics();
+        if (typeof renderActiveLoans === 'function') renderActiveLoans();
+        if (typeof renderAdminControlPanel === 'function') renderAdminControlPanel();
+        if (showToastFlag) showToast('Default borrow requests seeded to Supabase!', 'success');
+      } catch (err) {
+        console.warn('[Supabase] Loan seed error:', err.message);
+      } finally {
+        isSeedingLoans = false;
+      }
+    }
+
+    // Realtime Postgres Change Subscriptions
+    function setupSupabaseRealtime() {
+      if (!isSupabaseActive() || !supabaseClient) return;
+
+      try {
+        if (supabaseRealtimeChannel) {
+          supabaseRealtimeChannel.unsubscribe();
+        }
+
+        supabaseRealtimeChannel = supabaseClient.channel('custom-all-channel')
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'equipment' },
+            (payload) => {
+              console.log('[Supabase Realtime] Equipment change detected:', payload);
+              fetchInventory();
+            }
+          )
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'borrow_requests' },
+            (payload) => {
+              console.log('[Supabase Realtime] Borrow request change detected:', payload);
+              fetchLoans();
+            }
+          )
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'profiles' },
+            (payload) => {
+              console.log('[Supabase Realtime] Profile change detected:', payload);
+              fetchProfiles();
+            }
+          )
+          .subscribe((status) => {
+            console.log('[Supabase Realtime] Channel status:', status);
+            const statusEl = document.getElementById('supabase-status-text');
+            if (statusEl) {
+              if (status === 'SUBSCRIBED') {
+                statusEl.innerText = 'SUPABASE LIVE';
+              } else if (status === 'CHANNEL_ERROR') {
+                statusEl.innerText = 'REALTIME ERR';
+              }
+            }
+          });
+      } catch (err) {
+        console.warn('[Supabase Realtime] Setup error:', err);
+      }
+    }
+
+    // Supabase Auth State Listener
+    function setupSupabaseAuthListener() {
+      if (!isSupabaseActive() || !supabaseClient) return;
+
+      try {
+        supabaseClient.auth.onAuthStateChange(async (event, session) => {
+          if (session && session.user) {
+            const { data: profile } = await supabaseClient.from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+
+            if (profile) {
+              currentUser = {
+                userId: profile.user_id || profile.id,
+                fullName: profile.full_name || session.user.user_metadata?.full_name || 'Lab Member',
+                role: (profile.role || 'STUDENT').toUpperCase(),
+                lineId: profile.line_id || '@student',
+                batch: profile.batch || 68,
+                major: profile.major || 'Robotics & AI'
+              };
+            }
+            saveSession(currentUser);
+          } else if (event === 'SIGNED_OUT') {
+            saveSession(null);
+          }
+        });
+      } catch (e) {
+        console.warn('[Supabase Auth] Listener error:', e);
+      }
+    }
+
+    // Query Live Equipment Table from Supabase (Safe from recursive re-seed loops)
+    let isFetchingInventory = false;
+    async function fetchInventory(searchQuery = '', categoryFilter = 'ALL', locationFilter = 'ALL', statusFilter = 'ALL') {
+      if (isSupabaseActive()) {
+        if (isFetchingInventory) return;
+        isFetchingInventory = true;
+        try {
+          let query = supabaseClient.from('equipment').select('*').order('name', { ascending: true });
+
+          if (searchQuery && searchQuery.trim()) {
+            const cleanQuery = searchQuery.trim().replace(/[%_]/g, '');
+            query = query.or(`name.ilike.%${cleanQuery}%,serial_id.ilike.%${cleanQuery}%,brand.ilike.%${cleanQuery}%,specs.ilike.%${cleanQuery}%`);
+          }
+          if (categoryFilter && categoryFilter !== 'ALL') {
+            query = query.eq('category', categoryFilter);
+          }
+          if (locationFilter && locationFilter !== 'ALL') {
+            query = query.eq('location', locationFilter);
+          }
+
+          const { data, error } = await query;
+
+          if (error) {
+            console.warn('[Supabase] fetchInventory query error:', error.message);
+          } else if (data) {
+            if (data.length > 0) {
+              appInventory = data.map(mapEquipmentFromDb);
+              localStorage.setItem(STORAGE_KEY_INVENTORY, JSON.stringify(appInventory));
+            } else {
+              console.log('[Supabase] Equipment table returned 0 items for current query.');
+              if (!searchQuery && categoryFilter === 'ALL' && locationFilter === 'ALL') {
+                // If cloud table has 0 items, check if local storage has items or fallback to DEFAULT_ITEMS
+                const stored = localStorage.getItem(STORAGE_KEY_INVENTORY);
+                if (stored) {
+                  try { appInventory = JSON.parse(stored); } catch (e) { appInventory = [...DEFAULT_ITEMS]; }
+                } else {
+                  appInventory = [...DEFAULT_ITEMS];
+                }
+              } else {
+                appInventory = [];
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('[Supabase] fetchInventory exception:', e);
+        } finally {
+          isFetchingInventory = false;
+        }
+      }
+
+      updateInventoryTelemetry();
+      if (typeof populateBorrowItemDropdown === 'function') {
+        populateBorrowItemDropdown(currentBorrowCategoryFilter);
+      }
+
+      // Filter locally for status if statusFilter applied
+      let itemsToRender = appInventory;
+      if (statusFilter === 'IN_STOCK') {
+        itemsToRender = itemsToRender.filter(it => Number(it.availableQty) > 2);
+      } else if (statusFilter === 'BORROWED') {
+        itemsToRender = itemsToRender.filter(it => (Number(it.totalQty) - Number(it.availableQty)) > 0);
+      } else if (statusFilter === 'OUT_OF_STOCK') {
+        itemsToRender = itemsToRender.filter(it => Number(it.availableQty) === 0);
+      }
+
+      renderInventory(itemsToRender);
+    }
+
+    // Query Live Borrow Requests from Supabase (Safe from recursive re-seed loops)
+    let isFetchingLoans = false;
+    async function fetchLoans() {
+      if (isSupabaseActive()) {
+        if (isFetchingLoans) return;
+        isFetchingLoans = true;
+        try {
+          const { data, error } = await supabaseClient.from('borrow_requests')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+          if (error) {
+            console.warn('[Supabase] fetchLoans query error:', error.message);
+          } else if (data && data.length > 0) {
+            appLoans = data.map(mapLoanFromDb);
+            localStorage.setItem(STORAGE_KEY_LOANS, JSON.stringify(appLoans));
+          } else {
+            console.log('[Supabase] borrow_requests table returned 0 records.');
+            const stored = localStorage.getItem(STORAGE_KEY_LOANS);
+            if (stored) {
+              try { appLoans = JSON.parse(stored); } catch (e) { appLoans = [...DEFAULT_LOANS]; }
+            } else {
+              appLoans = [...DEFAULT_LOANS];
+            }
+          }
+        } catch (e) {
+          console.warn('[Supabase] fetchLoans exception:', e);
+        } finally {
+          isFetchingLoans = false;
+        }
+      }
+      renderDashboardAnalytics();
+      if (typeof renderActiveLoans === 'function') renderActiveLoans();
+      if (typeof renderAdminControlPanel === 'function') renderAdminControlPanel();
+    }
+
+    // Query Live Profiles from Supabase
+    async function fetchProfiles() {
+      if (isSupabaseActive()) {
+        try {
+          const { data, error } = await supabaseClient.from('profiles')
+            .select('*')
+            .order('created_at', { ascending: true });
+
+          if (!error && data && data.length > 0) {
+            appUsers = data.map(row => ({
+              userId: row.user_id || row.id,
+              fullName: row.full_name,
+              role: (row.role || 'STUDENT').toUpperCase(),
+              lineId: row.line_id || '@student',
+              batch: Number(row.batch) || 68,
+              major: row.major || 'Robotics & AI',
+              password: '123'
+            }));
+            localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(appUsers));
+            renderStudentDirectory();
+          }
+        } catch (e) {
+          console.warn('[Supabase] fetchProfiles exception:', e);
+        }
+      }
+    }
+
     // Storage keys
     const STORAGE_KEY_SESSION = 'rai_auth_session_m1';
     const STORAGE_KEY_USERS = 'rai_users_db_m1';
@@ -2901,20 +3665,26 @@
 
     // 4. Save Session to LocalStorage
     function saveSession(user) {
-      currentUser = user;
-      if (user) {
-        localStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify(user));
-      } else {
-        localStorage.removeItem(STORAGE_KEY_SESSION);
+      currentUser = user || null;
+      try {
+        if (currentUser) {
+          localStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify(currentUser));
+        } else {
+          localStorage.removeItem(STORAGE_KEY_SESSION);
+        }
+      } catch (e) {
+        console.warn('[Session] LocalStorage write warning:', e);
       }
-      applyRolePermissions();
+      applyRolePermissions(currentUser);
       renderAuthHeader();
       renderStudentDirectory();
     }
 
-    // 5. Apply Role-Based View Visibility
-    function applyRolePermissions() {
-      const isAdmin = currentUser && currentUser.role === 'ADMIN';
+    // 5. Apply Role-Based View Visibility (Safe against null/undefined session)
+    function applyRolePermissions(session = currentUser) {
+      currentUser = session || null;
+      const isAdmin = Boolean(currentUser && currentUser.role === 'ADMIN');
+      const isStudent = Boolean(currentUser && currentUser.role === 'STUDENT');
 
       // Admin Top Navigation Tab
       const adminNavTab = document.getElementById('nav-tab-admin');
@@ -2940,40 +3710,52 @@
         btnAddInv.style.display = isAdmin ? 'inline-flex' : 'none';
       }
 
-      // If user was on admin tab and switched to student, redirect to dashboard
+      // If user was on admin tab and switched to non-admin, redirect to dashboard
       if (!isAdmin && currentTab === 'admin') {
         switchTab('dashboard');
-        showToast('Admin tab is restricted to lab staff. Redirected to Dashboard.', 'info');
+        if (currentUser) {
+          showToast('Admin tab is restricted to lab staff. Redirected to Dashboard.', 'info');
+        }
       }
 
       // Update badge in drawer
       const drawerBadge = document.getElementById('drawer-role-badge');
       if (drawerBadge) {
-        if (isAdmin) {
+        if (isAdmin && currentUser) {
           drawerBadge.className = 'px-2 py-0.5 rounded text-[10px] font-mono bg-indigo-950 text-indigo-300 border border-indigo-800/60';
           drawerBadge.innerText = 'ADMIN MODE';
-        } else {
+        } else if (isStudent && currentUser) {
           drawerBadge.className = 'px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-950 text-emerald-300 border border-emerald-800/60';
-          drawerBadge.innerText = `BATCH ${currentUser.batch || 'ST'}`;
+          drawerBadge.innerText = `BATCH ${currentUser.batch || '68'}`;
+        } else {
+          drawerBadge.className = 'px-2 py-0.5 rounded text-[10px] font-mono bg-slate-800 text-slate-400 border border-slate-700';
+          drawerBadge.innerText = 'GUEST MODE';
         }
       }
 
       // Update Borrow Desk user preview
       const borrowUser = document.getElementById('borrow-desk-user');
-      if (borrowUser && currentUser) {
-        borrowUser.innerText = `${currentUser.fullName} (${currentUser.role === 'ADMIN' ? 'ADMIN' : currentUser.userId})`;
+      if (borrowUser) {
+        if (currentUser) {
+          borrowUser.innerText = `${currentUser.fullName} (${currentUser.role === 'ADMIN' ? 'ADMIN' : currentUser.userId})`;
+        } else {
+          borrowUser.innerText = 'Guest (Not Logged In)';
+        }
       }
 
       // Update Dashboard welcome card
       const welcomeH = document.getElementById('dashboard-welcome-heading');
       const welcomeB = document.getElementById('dashboard-welcome-body');
-      if (welcomeH && welcomeB && currentUser) {
-        if (isAdmin) {
+      if (welcomeH && welcomeB) {
+        if (isAdmin && currentUser) {
           welcomeH.innerText = `Welcome Administrator, ${currentUser.fullName}`;
           welcomeB.innerText = `Staff access verified. Full inventory authority, student Line contact directory, and equipment loan overrides are unlocked.`;
+        } else if (isStudent && currentUser) {
+          welcomeH.innerText = `Welcome Student, ${currentUser.fullName} (Batch ${currentUser.batch || '68'})`;
+          welcomeB.innerText = `Enrolled in ${currentUser.major || 'Robotics & AI'}. Equipment loans will be registered under Student ID ${currentUser.userId} and Line ID ${currentUser.lineId || '@student'}.`;
         } else {
-          welcomeH.innerText = `Welcome Student, ${currentUser.fullName} (Batch ${currentUser.batch})`;
-          welcomeB.innerText = `Enrolled in ${currentUser.major}. Equipment loans will be registered under Student ID ${currentUser.userId} and Line ID ${currentUser.lineId}.`;
+          welcomeH.innerText = 'Welcome to RAI Robotics & AI Lab';
+          welcomeB.innerText = 'Sign in or register a student account to borrow equipment, or browse our open laboratory catalog and analytics.';
         }
       }
 
@@ -2981,22 +3763,38 @@
       const cardSessionRole = document.getElementById('card-session-role');
       const cardSessionName = document.getElementById('card-session-name');
       const cardSessionLine = document.getElementById('card-session-line');
-      if (cardSessionRole && cardSessionName && cardSessionLine && currentUser) {
-        cardSessionRole.innerText = currentUser.role;
-        cardSessionRole.className = currentUser.role === 'ADMIN' ? 'text-indigo-400 font-bold' : 'text-emerald-400 font-bold';
-        cardSessionName.innerText = currentUser.fullName;
-        cardSessionLine.innerText = `Line: ${currentUser.lineId}`;
+      if (cardSessionRole && cardSessionName && cardSessionLine) {
+        if (currentUser) {
+          cardSessionRole.innerText = currentUser.role;
+          cardSessionRole.className = currentUser.role === 'ADMIN' ? 'text-indigo-400 font-bold' : 'text-emerald-400 font-bold';
+          cardSessionName.innerText = currentUser.fullName;
+          cardSessionLine.innerText = `Line: ${currentUser.lineId || '-'}`;
+        } else {
+          cardSessionRole.innerText = 'GUEST';
+          cardSessionRole.className = 'text-slate-400 font-bold';
+          cardSessionName.innerText = 'Not Authenticated';
+          cardSessionLine.innerText = 'Line: -';
+        }
       }
 
       // Update drawer user card
       const drawerUserCard = document.getElementById('drawer-user-card');
-      if (drawerUserCard && currentUser) {
-        drawerUserCard.innerHTML = `
-          <div class="text-[10px] text-slate-500 uppercase">ACTIVE USER SESSION</div>
-          <div class="font-bold text-slate-200 text-xs font-sans mt-0.5">${currentUser.fullName}</div>
-          <div class="text-[10px] text-indigo-400 font-mono">${currentUser.role} · ID: ${currentUser.userId}</div>
-          <div class="text-[10px] text-emerald-400 font-mono mt-1">Line: ${currentUser.lineId}</div>
-        `;
+      if (drawerUserCard) {
+        if (currentUser) {
+          drawerUserCard.innerHTML = `
+            <div class="text-[10px] text-slate-500 uppercase">ACTIVE USER SESSION</div>
+            <div class="font-bold text-slate-200 text-xs font-sans mt-0.5">${currentUser.fullName}</div>
+            <div class="text-[10px] text-indigo-400 font-mono">${currentUser.role} · ID: ${currentUser.userId}</div>
+            <div class="text-[10px] text-emerald-400 font-mono mt-1">Line: ${currentUser.lineId || '-'}</div>
+          `;
+        } else {
+          drawerUserCard.innerHTML = `
+            <div class="text-[10px] text-slate-500 uppercase">ACTIVE USER SESSION</div>
+            <div class="font-bold text-slate-400 text-xs font-sans mt-0.5">Guest (Not Signed In)</div>
+            <div class="text-[10px] text-slate-500 font-mono">Sign in to borrow equipment</div>
+            <button onclick="openAuthModal('login')" class="mt-2 w-full py-1 text-center bg-indigo-600/80 hover:bg-indigo-600 text-white rounded text-[10px] font-sans font-semibold">Sign In / Register</button>
+          `;
+        }
       }
 
       // Refresh inventory items to update admin controls
@@ -3014,9 +3812,14 @@
 
       // Update footer session indicator
       const footerSession = document.getElementById('footer-session-role');
-      if (footerSession && currentUser) {
-        footerSession.innerText = `${currentUser.fullName} (${currentUser.role})`;
-        footerSession.className = currentUser.role === 'ADMIN' ? 'text-indigo-400 font-bold' : 'text-emerald-400 font-bold';
+      if (footerSession) {
+        if (currentUser) {
+          footerSession.innerText = `${currentUser.fullName} (${currentUser.role})`;
+          footerSession.className = currentUser.role === 'ADMIN' ? 'text-indigo-400 font-bold' : 'text-emerald-400 font-bold';
+        } else {
+          footerSession.innerText = 'Guest (Not Logged In)';
+          footerSession.className = 'text-slate-500 font-normal';
+        }
       }
     }
 
@@ -3245,14 +4048,92 @@
       if (signupErr) signupErr.classList.add('hidden');
     }
 
-    // 10. Handle Login Submission
-    function handleLoginSubmit(event) {
+    // 10. Handle Login Submission (Supabase signInWithPassword & Profiles Role Resolution)
+    async function handleLoginSubmit(event) {
       event.preventDefault();
       const idInput = document.getElementById('login-id-input').value.trim();
       const passInput = document.getElementById('login-password-input').value.trim();
       const errBox = document.getElementById('login-error-msg');
 
-      // Check admin credentials
+      if (!idInput || !passInput) {
+        errBox.innerText = 'Please enter both credentials.';
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      // Live Supabase Authentication Integration
+      if (isSupabaseActive()) {
+        try {
+          let loginEmail = idInput;
+          if (!loginEmail.includes('@')) {
+            if (loginEmail.toLowerCase() === 'admin') {
+              loginEmail = 'admin@rai.ac.th';
+            } else {
+              loginEmail = `${idInput}@student.rai.ac.th`;
+            }
+          }
+
+          const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
+            email: loginEmail,
+            password: passInput
+          });
+
+          if (!authError && authData && authData.user) {
+            // Fetch role (student or admin) from profiles table to toggle admin dashboard UI
+            let role = 'STUDENT';
+            let fullName = authData.user.user_metadata?.full_name || 'Lab Member';
+            let studentId = authData.user.user_metadata?.student_id || idInput;
+            let batch = authData.user.user_metadata?.batch || 68;
+            let major = authData.user.user_metadata?.major || 'Robotics & AI';
+            let lineId = authData.user.user_metadata?.line_id || '@student';
+
+            const { data: profile } = await supabaseClient.from('profiles')
+              .select('*')
+              .eq('id', authData.user.id)
+              .single();
+
+            if (profile) {
+              role = (profile.role || 'STUDENT').toUpperCase();
+              fullName = profile.full_name || fullName;
+              studentId = profile.user_id || studentId;
+              batch = profile.batch || batch;
+              major = profile.major || major;
+              lineId = profile.line_id || lineId;
+            } else if (idInput.toLowerCase() === 'admin' || loginEmail.startsWith('admin@')) {
+              role = 'ADMIN';
+            }
+
+            currentUser = {
+              userId: studentId,
+              fullName: fullName,
+              role: role,
+              lineId: lineId,
+              batch: batch,
+              major: major
+            };
+
+            saveSession(currentUser);
+            applyRolePermissions();
+            closeAuthModal();
+            showToast(`Authenticated via Supabase as ${currentUser.fullName} (${currentUser.role})`, 'success');
+            return;
+          } else if (authError) {
+            console.log('[Supabase Auth] Cloud signIn error:', authError.message);
+            // Fallback for pre-seeded local testing before Supabase accounts are created
+            const fallbackStudent = appUsers.find(u => u.userId.toLowerCase() === idInput.toLowerCase());
+            const isAdminCred = idInput.toLowerCase() === 'admin' && passInput === 'admin123';
+            if (!fallbackStudent && !isAdminCred) {
+              errBox.innerText = `Supabase Login Error: ${authError.message}. Make sure your account is registered via Sign-Up tab.`;
+              errBox.classList.remove('hidden');
+              return;
+            }
+          }
+        } catch (e) {
+          console.warn('[Supabase Auth] Login exception:', e);
+        }
+      }
+
+      // Local fallback checking
       if (idInput.toLowerCase() === 'admin') {
         if (passInput === 'admin123') {
           const adminUser = appUsers.find(u => u.userId === 'admin') || DEFAULT_USERS[0];
@@ -3267,7 +4148,6 @@
         }
       }
 
-      // Check student credentials
       const student = appUsers.find(u => u.userId.toLowerCase() === idInput.toLowerCase());
       if (!student) {
         errBox.innerText = `Student ID "${idInput}" is not registered. Please switch to Sign-Up tab.`;
@@ -3296,9 +4176,11 @@
       }
     }
 
-    // 11. Handle Student Sign-Up Submission
-    function handleSignupSubmit(event) {
-      event.preventDefault();
+    // 11. Handle Student Sign-Up Submission (Supabase signUp & profiles metadata storage)
+    async function handleSignupSubmit(event) {
+      if (event && typeof event.preventDefault === 'function') {
+        event.preventDefault();
+      }
       const name = document.getElementById('signup-name-input').value.trim();
       const studentId = document.getElementById('signup-id-input').value.trim();
       let lineId = document.getElementById('signup-line-input').value.trim();
@@ -3308,51 +4190,143 @@
       const errBox = document.getElementById('signup-error-msg');
 
       if (!name || !studentId || !lineId || !password) {
-        errBox.innerText = 'Please complete all required fields.';
-        errBox.classList.remove('hidden');
+        if (errBox) {
+          errBox.innerText = 'Please complete all required fields.';
+          errBox.classList.remove('hidden');
+        }
         return;
       }
 
-      // Auto prepend @ to Line ID if omitted
       if (!lineId.startsWith('@')) {
         lineId = '@' + lineId;
       }
 
-      // Check uniqueness
-      if (appUsers.some(u => u.userId.toLowerCase() === studentId.toLowerCase())) {
-        errBox.innerText = `Student ID ${studentId} is already registered. Please sign in instead.`;
-        errBox.classList.remove('hidden');
-        return;
+      const email = studentId.includes('@') ? studentId : `${studentId}@student.rai.ac.th`;
+      let fallbackLocalMode = false;
+
+      // Live Supabase Authentication & Profile Metadata Storage
+      if (isSupabaseActive() && supabaseClient) {
+        try {
+          const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+              data: {
+                student_id: studentId,
+                full_name: name,
+                batch: batch,
+                major: major,
+                line_id: lineId,
+                role: 'STUDENT'
+              }
+            }
+          });
+
+          if (authError) {
+            // Check for HTTP 429 / Rate Limit error
+            const isRateLimit = authError.status === 429 || 
+              (authError.message && (
+                authError.message.toLowerCase().includes('rate limit') ||
+                authError.message.toLowerCase().includes('too many') ||
+                authError.message.toLowerCase().includes('over_email_send_rate_limit')
+              ));
+
+            if (isRateLimit) {
+              console.warn('[Supabase Auth] HTTP 429 Rate Limit encountered. Enabling development fallback local session creation:', authError.message);
+              fallbackLocalMode = true;
+              showToast('⚠️ Supabase rate limit reached (HTTP 429). Falling back to local offline session mode for development testing.', 'info');
+            } else {
+              if (errBox) {
+                errBox.innerText = `Supabase Sign-Up Error: ${authError.message}`;
+                errBox.classList.remove('hidden');
+              }
+              return;
+            }
+          }
+
+          const authId = authData?.user?.id;
+          if (authId && !fallbackLocalMode) {
+            // Save metadata (Student ID, Batch, Major) to the profiles table
+            const { error: profileError } = await supabaseClient.from('profiles').upsert({
+              id: authId,
+              user_id: studentId,
+              full_name: name,
+              role: 'STUDENT',
+              batch: batch,
+              major: major,
+              line_id: lineId
+            });
+            if (profileError) {
+              console.warn('[Supabase] profiles table insert warning:', profileError.message);
+            }
+          }
+        } catch (e) {
+          const isRateLimit = e && (e.status === 429 || (e.message && e.message.toLowerCase().includes('rate limit')));
+          if (isRateLimit) {
+            console.warn('[Supabase Auth] HTTP 429 Rate Limit caught in exception handler:', e.message);
+            fallbackLocalMode = true;
+            showToast('⚠️ Supabase rate limit reached (HTTP 429). Falling back to local offline session mode.', 'info');
+          } else {
+            console.warn('[Supabase] handleSignupSubmit exception:', e);
+            fallbackLocalMode = true;
+          }
+        }
       }
 
-      // Create new student
-      const newStudent = {
-        userId: studentId,
-        password: password,
-        fullName: name,
-        role: 'STUDENT',
-        lineId: lineId,
-        batch: batch,
-        major: major
-      };
+      // Check uniqueness locally & create or update user
+      let studentUser = appUsers.find(u => u.userId.toLowerCase() === studentId.toLowerCase());
+      if (!studentUser) {
+        studentUser = {
+          userId: studentId,
+          password: password,
+          fullName: name,
+          role: 'STUDENT',
+          lineId: lineId,
+          batch: batch,
+          major: major
+        };
+        appUsers.push(studentUser);
+      } else {
+        studentUser.fullName = name;
+        studentUser.lineId = lineId;
+        studentUser.batch = batch;
+        studentUser.major = major;
+        studentUser.password = password;
+      }
 
-      appUsers.push(newStudent);
       saveUsers();
-      saveSession(newStudent);
-      closeAuthModal();
+      saveSession(studentUser);
 
+      closeAuthModal();
       showToast(`Registration complete! Welcome ${name} (Batch ${batch}, ${major}).`, 'success');
 
       // Clear input fields
-      document.getElementById('signup-name-input').value = '';
-      document.getElementById('signup-id-input').value = '';
-      document.getElementById('signup-line-input').value = '';
-      document.getElementById('signup-password-input').value = '';
+      const inputName = document.getElementById('signup-name-input');
+      const inputId = document.getElementById('signup-id-input');
+      const inputLine = document.getElementById('signup-line-input');
+      const inputPass = document.getElementById('signup-password-input');
+      if (inputName) inputName.value = '';
+      if (inputId) inputId.value = '';
+      if (inputLine) inputLine.value = '';
+      if (inputPass) inputPass.value = '';
+      if (errBox) errBox.classList.add('hidden');
     }
 
-    // 12. Logout User
+    // Direct alias for handleStudentSignUp
+    function handleStudentSignUp(event) {
+      return handleSignupSubmit(event);
+    }
+
+    // 12. Logout User (Clean session clear with null safe handling)
     function logoutUser() {
       const prevName = currentUser ? currentUser.fullName : 'User';
+      if (isSupabaseActive() && supabaseClient && supabaseClient.auth) {
+        try {
+          supabaseClient.auth.signOut().catch(err => console.warn('[Supabase Auth] signOut warning:', err));
+        } catch (e) {
+          console.warn('[Supabase Auth] signOut exception:', e);
+        }
+      }
       saveSession(null);
       showToast(`${prevName} logged out successfully.`, 'info');
       switchTab('dashboard');
@@ -3499,7 +4473,7 @@
       }
     }
 
-    // Filter Inventory by Query, Category, Status, and Location
+    // Filter Inventory by Query, Category, Status, and Location (Executes Live against Supabase)
     function handleInventoryFilterChange() {
       const searchInput = document.getElementById('inv-search-input');
       const categoryFilter = document.getElementById('inv-filter-category');
@@ -3518,6 +4492,12 @@
         } else {
           clearBtn.classList.add('hidden');
         }
+      }
+
+      // Live Supabase Query Execution
+      if (isSupabaseActive()) {
+        fetchInventory(query, cat, loc, status);
+        return;
       }
 
       const filtered = appInventory.filter(item => {
@@ -3911,6 +4891,18 @@
         item.availableQty = availQty;
         item.specs = specs || 'Laboratory hardware asset';
 
+        // Live Supabase Equipment Table Update
+        if (isSupabaseActive()) {
+          try {
+            supabaseClient.from('equipment').upsert([mapEquipmentToDb(item)], { onConflict: 'serial_id' }).then(({ error }) => {
+              if (error) console.warn('[Supabase] Equipment update error:', error.message);
+              else console.log('[Supabase] Equipment updated in live database:', item.serialId);
+            });
+          } catch (e) {
+            console.warn('[Supabase] Equipment update exception:', e);
+          }
+        }
+
         addActivity(
           'STOCK',
           'Equipment Updated',
@@ -3947,6 +4939,18 @@
         };
 
         appInventory.unshift(newItem);
+
+        // Live Supabase Equipment Table Insert
+        if (isSupabaseActive()) {
+          try {
+            supabaseClient.from('equipment').insert([mapEquipmentToDb(newItem)]).then(({ error }) => {
+              if (error) console.warn('[Supabase] Equipment insert error:', error.message);
+              else console.log('[Supabase] New equipment enrolled in live database:', newItem.serialId);
+            });
+          } catch (e) {
+            console.warn('[Supabase] Equipment insert exception:', e);
+          }
+        }
 
         addActivity(
           'RESTOCK',
@@ -3993,6 +4997,20 @@
       }
 
       item.availableQty = newAvail;
+
+      // Live Supabase Stock Adjustment
+      if (isSupabaseActive()) {
+        try {
+          supabaseClient.from('equipment').update({
+            available_qty: newAvail
+          }).eq('item_id', item.itemId).then(({ error }) => {
+            if (error) console.warn('[Supabase] adjustItemStock error:', error.message);
+          });
+        } catch (e) {
+          console.warn('[Supabase] adjustItemStock exception:', e);
+        }
+      }
+
       saveInventory();
       showToast(`Stock updated for ${item.name}: ${item.availableQty}/${item.totalQty} available`, 'success');
       handleInventoryFilterChange();
@@ -4060,7 +5078,7 @@
 
       const overdueLoans = lns.filter(l => l.status === 'OVERDUE');
       const overdueCount = overdueLoans.length;
-      const activeLoans = lns.filter(l => l.status === 'ACTIVE');
+      const activeLoans = lns.filter(l => l.status === 'ACTIVE' || l.status === 'APPROVED');
       const activeCount = activeLoans.length;
       const returnedLoans = lns.filter(l => l.status === 'RETURNED');
       const returnedCount = returnedLoans.length;
@@ -4973,6 +5991,20 @@
       item.availableQty = Number(item.availableQty) + 2;
       item.totalQty = Number(item.totalQty) + 2;
 
+      // Live Supabase Restock Sync
+      if (isSupabaseActive()) {
+        try {
+          supabaseClient.from('equipment').update({
+            available_qty: item.availableQty,
+            total_qty: item.totalQty
+          }).eq('item_id', item.itemId).then(({ error }) => {
+            if (error) console.warn('[Supabase] restockItemQuick error:', error.message);
+          });
+        } catch (e) {
+          console.warn('[Supabase] restockItemQuick exception:', e);
+        }
+      }
+
       addActivity(
         'RESTOCK',
         'Quick Restock Executed',
@@ -4997,12 +6029,40 @@
 
       loan.status = 'RETURNED';
       loan.daysOverdue = 0;
+      loan.returnDate = new Date().toISOString().split('T')[0];
 
       // Restock inventory item
       const item = appInventory.find(it => it.itemId === loan.itemId || it.serialId === loan.serialId);
       if (item) {
         if (Number(item.availableQty) < Number(item.totalQty)) {
           item.availableQty = Number(item.availableQty) + 1;
+        }
+      }
+
+      // Live Supabase Return Confirmation Sync
+      if (isSupabaseActive()) {
+        try {
+          supabaseClient.from('borrow_requests')
+            .update({
+              status: 'RETURNED',
+              return_date: loan.returnDate,
+              days_overdue: 0
+            })
+            .eq('loan_id', loan.loanId)
+            .then(({ error }) => {
+              if (error) console.warn('[Supabase] returnOverdueItemQuick error:', error.message);
+            });
+
+          if (item) {
+            supabaseClient.from('equipment')
+              .update({ available_qty: item.availableQty })
+              .eq('item_id', item.itemId)
+              .then(({ error }) => {
+                if (error) console.warn('[Supabase] restock after return error:', error.message);
+              });
+          }
+        } catch (e) {
+          console.warn('[Supabase] returnOverdueItemQuick exception:', e);
         }
       }
 
@@ -5618,6 +6678,25 @@
         showToast(`Application submitted! Status: PENDING Admin Approval. Review in Admin Panel or Active Loans.`, 'success');
       }
 
+      // LIVE SUPABASE WORKFLOW: Submit Request (Inserts row into borrow_requests with status 'PENDING')
+      if (isSupabaseActive()) {
+        try {
+          const dbLoan = mapLoanToDb(newLoan);
+          supabaseClient.from('borrow_requests').insert([dbLoan]).then(({ error }) => {
+            if (error) console.warn('[Supabase] borrow_requests insert error:', error.message);
+            else console.log('[Supabase] Borrow request inserted into borrow_requests with status:', newLoan.status);
+          });
+          supabaseClient.from('equipment').update({
+            available_qty: item.availableQty,
+            borrow_count: item.borrowCount
+          }).eq('item_id', item.itemId).then(({ error }) => {
+            if (error) console.warn('[Supabase] equipment qty sync error:', error.message);
+          });
+        } catch (e) {
+          console.warn('[Supabase] handleBorrowSubmit sync exception:', e);
+        }
+      }
+
       // 4. PERSIST to LocalStorage
       saveInventory();
       saveLoans();
@@ -5656,8 +6735,8 @@
       const today = new Date();
       today.setHours(0,0,0,0);
 
-      // 1. Filter by Active / Overdue / Pending Status
-      let activeLoansList = appLoans.filter(l => l.status === 'ACTIVE' || l.status === 'OVERDUE' || l.status === 'PENDING');
+      // 1. Filter by Active / Approved / Overdue / Pending Status
+      let activeLoansList = appLoans.filter(l => l.status === 'ACTIVE' || l.status === 'APPROVED' || l.status === 'OVERDUE' || l.status === 'PENDING');
 
       // 2. Role-Based Security Filter:
       // If student: ONLY show loans for this student.
@@ -5764,7 +6843,7 @@
           statusBadge = `
             <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-950 text-emerald-300 border border-emerald-800 flex items-center gap-1.5">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-              ACTIVE (${Math.abs(diffDays)}d left)
+              ${loan.status === 'APPROVED' ? 'APPROVED' : 'ACTIVE'} (${Math.abs(diffDays)}d left)
             </span>
           `;
         }
@@ -6044,6 +7123,40 @@
         actColor
       );
 
+      // LIVE SUPABASE WORKFLOW: Return Confirmation (Updates status to 'RETURNED' & increments available_qty)
+      if (isSupabaseActive()) {
+        try {
+          supabaseClient.from('borrow_requests')
+            .update({
+              status: 'RETURNED',
+              return_date: todayStr,
+              return_condition: condition,
+              inspection_notes: loan.inspectionNotes,
+              days_overdue: 0
+            })
+            .eq('loan_id', loan.loanId)
+            .then(({ error }) => {
+              if (error) console.warn('[Supabase] Return confirmation error:', error.message);
+              else console.log('[Supabase] Return confirmed for loan:', loan.loanId);
+            });
+
+          if (item) {
+            supabaseClient.from('equipment')
+              .update({
+                available_qty: item.availableQty,
+                total_qty: item.totalQty
+              })
+              .eq('item_id', item.itemId)
+              .then(({ error }) => {
+                if (error) console.warn('[Supabase] Equipment increment error:', error.message);
+                else console.log('[Supabase] Equipment restocked:', item.itemId, 'Avail:', item.availableQty);
+              });
+          }
+        } catch (e) {
+          console.warn('[Supabase] Return modal submit sync error:', e);
+        }
+      }
+
       // PERSIST DATA
       saveInventory();
       saveLoans();
@@ -6150,7 +7263,7 @@
       // Auto-detect overdue loans: compare expected_return_date with current date
       let overdueCount = 0;
       appLoans.forEach(loan => {
-        if (loan.status === 'ACTIVE' || loan.status === 'OVERDUE') {
+        if (loan.status === 'ACTIVE' || loan.status === 'APPROVED' || loan.status === 'OVERDUE') {
           const due = new Date(loan.dueDate + 'T00:00:00');
           const diffDays = Math.round((today - due) / (1000 * 60 * 60 * 24));
           if (diffDays > 0) {
@@ -6158,7 +7271,7 @@
             loan.daysOverdue = diffDays;
             overdueCount++;
           } else if (loan.status === 'OVERDUE' && diffDays <= 0) {
-            loan.status = 'ACTIVE';
+            loan.status = 'APPROVED';
             loan.daysOverdue = 0;
           }
         }
@@ -6324,7 +7437,7 @@
       }).join('');
     }
 
-    // 3. Approve Pending Loan Handler (M5 Requirement)
+    // 3. Approve Pending Loan Handler (M5 & Supabase Workflow: Updates status to 'APPROVED' & decrements available_qty)
     function handleApprovePendingLoan(loanId) {
       if (!currentUser || currentUser.role !== 'ADMIN') {
         showToast('Admin privileges required to authorize equipment loans.', 'error');
@@ -6337,7 +7450,38 @@
         return;
       }
 
-      loan.status = 'ACTIVE';
+      // Update status to 'APPROVED'
+      loan.status = 'APPROVED';
+
+      const item = appInventory.find(it => it.itemId === loan.itemId || it.serialId === loan.serialId);
+
+      // LIVE SUPABASE WORKFLOW: Admin Approval
+      if (isSupabaseActive()) {
+        try {
+          supabaseClient.from('borrow_requests')
+            .update({ status: 'APPROVED' })
+            .eq('loan_id', loan.loanId)
+            .then(({ error }) => {
+              if (error) console.warn('[Supabase] Loan approval update error:', error.message);
+              else console.log('[Supabase] Loan status updated to APPROVED:', loan.loanId);
+            });
+
+          // Decrement available_qty in equipment
+          if (item) {
+            supabaseClient.from('equipment')
+              .update({
+                available_qty: item.availableQty,
+                borrow_count: item.borrowCount
+              })
+              .eq('item_id', item.itemId)
+              .then(({ error }) => {
+                if (error) console.warn('[Supabase] Equipment decrement error:', error.message);
+              });
+          }
+        } catch (e) {
+          console.warn('[Supabase] handleApprovePendingLoan exception:', e);
+        }
+      }
 
       addActivity(
         'LOAN',
@@ -6347,6 +7491,7 @@
       );
 
       saveLoans();
+      saveInventory();
       saveActivities();
       showToast(`Request ${loan.loanId} APPROVED! ${loan.itemName} is now Active for ${loan.studentName}.`, 'success');
 
@@ -6355,6 +7500,7 @@
       if (typeof renderActiveLoans === 'function') {
         renderActiveLoans();
       }
+      handleInventoryFilterChange();
     }
 
     // Alias for active loan card calls
@@ -6381,11 +7527,36 @@
       if (item) {
         item.availableQty = Math.min(Number(item.totalQty), Number(item.availableQty) + qtyToRestock);
         item.borrowCount = Math.max(0, (Number(item.borrowCount) || 0) - qtyToRestock);
-        saveInventory();
       }
 
       // Mark request as rejected
       loan.status = 'REJECTED';
+
+      // LIVE SUPABASE WORKFLOW: Reject Request & Restock
+      if (isSupabaseActive()) {
+        try {
+          supabaseClient.from('borrow_requests')
+            .update({ status: 'REJECTED' })
+            .eq('loan_id', loan.loanId)
+            .then(({ error }) => {
+              if (error) console.warn('[Supabase] Loan reject error:', error.message);
+            });
+
+          if (item) {
+            supabaseClient.from('equipment')
+              .update({
+                available_qty: item.availableQty,
+                borrow_count: item.borrowCount
+              })
+              .eq('item_id', item.itemId)
+              .then(({ error }) => {
+                if (error) console.warn('[Supabase] Equipment restock error:', error.message);
+              });
+          }
+        } catch (e) {
+          console.warn('[Supabase] handleRejectPendingLoan exception:', e);
+        }
+      }
 
       addActivity(
         'STOCK',
@@ -6395,6 +7566,7 @@
       );
 
       saveLoans();
+      saveInventory();
       saveActivities();
       showToast(`Request ${loan.loanId} REJECTED. Restocked ${qtyToRestock}x "${loan.itemName}" into active inventory.`, 'info');
 
@@ -6422,8 +7594,22 @@
       if (pending.length === 0) return;
 
       pending.forEach(loan => {
-        loan.status = 'ACTIVE';
+        loan.status = 'APPROVED';
       });
+
+      if (isSupabaseActive()) {
+        try {
+          const pendingIds = pending.map(l => l.loanId);
+          supabaseClient.from('borrow_requests')
+            .update({ status: 'APPROVED' })
+            .in('loan_id', pendingIds)
+            .then(({ error }) => {
+              if (error) console.warn('[Supabase] Bulk approve error:', error.message);
+            });
+        } catch (e) {
+          console.warn('[Supabase] handleApproveAllPendingLoans exception:', e);
+        }
+      }
 
       addActivity(
         'LOAN',
@@ -6433,6 +7619,7 @@
       );
 
       saveLoans();
+      saveInventory();
       saveActivities();
       showToast(`Bulk authorized all ${pending.length} pending hardware requests!`, 'success');
 
@@ -6457,7 +7644,7 @@
       // Auto-detection logic: Compare expected_return_date with current date
       const overdueList = [];
       appLoans.forEach(loan => {
-        if (loan.status === 'ACTIVE' || loan.status === 'OVERDUE') {
+        if (loan.status === 'ACTIVE' || loan.status === 'APPROVED' || loan.status === 'OVERDUE') {
           const due = new Date(loan.dueDate + 'T00:00:00');
           const diffDays = Math.round((today - due) / (1000 * 60 * 60 * 24));
           if (diffDays > 0) {
@@ -6467,7 +7654,7 @@
           } else {
             loan.daysOverdue = 0;
             if (loan.status === 'OVERDUE') {
-              loan.status = 'ACTIVE';
+              loan.status = 'APPROVED';
             }
           }
         }
@@ -6896,9 +8083,73 @@ If you require an extension for ongoing research, contact Lab Administrator Dr. 
       runSanityCheck(false);
     }
 
-    // Expose diagnostic tools to window for console evaluation
+    // =========================================================================
+    // EXPLICIT GLOBAL WINDOW EVENT HANDLERS
+    // Ensures all inline HTML onclick / onchange / onsubmit / oninput calls resolve cleanly
+    // =========================================================================
+    window.switchTab = switchTab;
+    window.openSupabaseConfigModal = openSupabaseConfigModal;
+    window.closeSupabaseConfigModal = closeSupabaseConfigModal;
+    window.testSupabaseConnection = testSupabaseConnection;
+    window.handleSupabaseKeysSubmit = handleSupabaseKeysSubmit;
+    window.copySupabaseSchemaSql = copySupabaseSchemaSql;
+    window.seedSupabaseInventory = seedSupabaseInventory;
+    window.seedSupabaseLoans = seedSupabaseLoans;
+    window.fetchInventory = fetchInventory;
+    window.fetchLoans = fetchLoans;
+    window.fetchProfiles = fetchProfiles;
+    window.openAuthModal = openAuthModal;
+    window.closeAuthModal = closeAuthModal;
+    window.switchAuthModalTab = switchAuthModalTab;
+    window.handleLoginSubmit = handleLoginSubmit;
+    window.handleSignupSubmit = handleSignupSubmit;
+    window.handleStudentSignUp = handleStudentSignUp;
+    window.logoutUser = logoutUser;
+    window.saveSession = saveSession;
+    window.applyRolePermissions = applyRolePermissions;
+    window.quickLoginPreset = quickLoginPreset;
+    window.toggleDrawer = toggleDrawer;
+    window.updateDashboardAnalytics = updateDashboardAnalytics;
+    window.renderDashboardAnalytics = renderDashboardAnalytics;
+    window.filterInventoryByCategoryFromDashboard = filterInventoryByCategoryFromDashboard;
+    window.filterInventoryByLocationFromDashboard = filterInventoryByLocationFromDashboard;
+    window.handleInventoryFilterChange = handleInventoryFilterChange;
+    window.clearInventorySearch = clearInventorySearch;
+    window.setInventoryViewMode = setInventoryViewMode;
+    window.openAddItemModal = openAddItemModal;
+    window.closeAddItemModal = closeAddItemModal;
+    window.handleAddItemSubmit = handleAddItemSubmit;
+    window.adjustItemStock = adjustItemStock;
+    window.borrowItemDirect = borrowItemDirect;
+    window.switchBorrowDeskTab = switchBorrowDeskTab;
+    window.filterBorrowItemsByCategory = filterBorrowItemsByCategory;
+    window.handleBorrowItemSelectionChange = handleBorrowItemSelectionChange;
+    window.setBorrowDurationPreset = setBorrowDurationPreset;
+    window.handleDueDateChange = handleDueDateChange;
+    window.handleBorrowQtyInput = handleBorrowQtyInput;
+    window.fillBorrowPurpose = fillBorrowPurpose;
+    window.handleBorrowSubmit = handleBorrowSubmit;
+    window.handleReturnsFilterChange = handleReturnsFilterChange;
+    window.openReturnModal = openReturnModal;
+    window.closeReturnModal = closeReturnModal;
+    window.handleReturnModalSubmit = handleReturnModalSubmit;
+    window.handleAdminStudentSelectChange = handleAdminStudentSelectChange;
+    window.handleApprovePendingLoan = handleApprovePendingLoan;
+    window.handleRejectPendingLoan = handleRejectPendingLoan;
+    window.handleApproveLoan = handleApproveLoan;
+    window.handleRejectLoan = handleRejectLoan;
+    window.handleApproveAllPendingLoans = handleApproveAllPendingLoans;
+    window.scanOverdueLoansManual = scanOverdueLoansManual;
+    window.sendLineWarning = sendLineWarning;
+    window.copyLineId = copyLineId;
+    window.copyLineIdForRecall = copyLineIdForRecall;
+    window.restockItemQuick = restockItemQuick;
+    window.returnOverdueItemQuick = returnOverdueItemQuick;
     window.runSanityCheck = runSanityCheck;
     window.resetEntireDemoState = resetEntireDemoState;
+    window.resetFactoryInventory = resetFactoryInventory;
+    window.showToast = showToast;
+    window.supabaseClient = supabaseClient;
 
     // =========================================================================
     // 15. Setup on DOM Ready
@@ -6909,6 +8160,7 @@ If you require an extension for ongoing research, contact Lab Administrator Dr. 
       initInventory();
       initLoans();
       initActivities();
+      initSupabaseClient();
       applyRolePermissions();
       renderAuthHeader();
       renderStudentDirectory();
@@ -6916,6 +8168,12 @@ If you require an extension for ongoing research, contact Lab Administrator Dr. 
       initBorrowDesk();
       renderAdminControlPanel();
       runSanityCheck(false);
+
+      if (isSupabaseActive()) {
+        fetchInventory();
+        fetchLoans();
+        fetchProfiles();
+      }
 
       const toggleBtn = document.getElementById('btn-toggle-drawer');
       if (toggleBtn) {
